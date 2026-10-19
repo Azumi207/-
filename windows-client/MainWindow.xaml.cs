@@ -27,7 +27,7 @@ public partial class MainWindow:Window
     bool ready,tableDirty;
     public MainWindow()
     {
-        InitializeComponent();InitializeAppearance();ready=true;
+        InitializeComponent();InitializeAppearance();ready=true;InitializeAssPreview();
         FontBox.ItemsSource=Fonts.SystemFontFamilies.Select(f=>f.Source).Order().ToArray();
         // IME completion can already be handled by a text control; observe it anyway.
         AddHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler((_,_)=>composing=true),true);
@@ -46,7 +46,7 @@ public partial class MainWindow:Window
         document.Add(0,2,"");RefreshAll(0);UpdateShortcutHint();Loaded+=(_,_)=>{if(!SmokeMode)ApplyDisplayOptions(DisplayOptions.Load(DisplayOptionsPath));UpdateVideoPresentation();};
     }
     void Guard(Action action){try{action();}catch(Exception ex){MessageBox.Show(this,ex.Message,"帧语",MessageBoxButton.OK,MessageBoxImage.Warning);Status.Text=ex.Message;}}
-    void MarkDirty(){dirty=true;tableDirty=true;Overlay.InvalidateDocument();UpdateTitle();}
+    void MarkDirty(){ScheduleAssPreview();dirty=true;tableDirty=true;Overlay.InvalidateDocument();UpdateTitle();}
     void UpdateTitle(){Title=$"{(dirty||draftDirty?"* ":"")}{Path.GetFileName(subtitlePath)??"未命名.ass"} — 帧语 Windows Alpha 0.2.0 · 新版界面";FileLabel.Text=Path.GetFileName(subtitlePath)??"未命名.ass";FileLabel.ToolTip=subtitlePath??"尚未保存的字幕";}
     Snapshot Capture()=>new(document.Serialize(),document.Rows.Select(r=>(r.Note,r.Reviewed)).ToArray(),selected?.Number-1??0);
     void PushUndo(){undo.Push(Capture());redo.Clear();if(undo.Count>150){var keep=undo.Take(100).Reverse().ToArray();undo.Clear();foreach(var s in keep)undo.Push(s);}}
@@ -59,7 +59,7 @@ public partial class MainWindow:Window
         if(row!=null){ActorBox.Text=row.Actor;if(!StyleBox.Items.Cast<string>().Contains(row.Style))StyleBox.ItemsSource=document.Styles.Select(s=>s.Name).Append(row.Style).Distinct().ToArray();StyleBox.SelectedItem=row.Style;LayerBox.Text=row.Layer;CommentBox.IsChecked=row.Comment;StartBox.Text=row.StartText;EndBox.Text=row.EndText;TextEditor.Text=row.Text.Replace(@"\N","\n");DurationLabel.Text=row.DurationText;NoteBox.Text=row.Note;
             var s=document.FindStyle(row);FontBox.Text=AssTags.Get(row,"fn",s?.Get("Fontname","Microsoft YaHei")??"Microsoft YaHei");SizeBox.Text=AssTags.Number(row,"fs",s?.Number("Fontsize",48)??48).ToString(CultureInfo.InvariantCulture);OutlineBox.Text=AssTags.Number(row,"bord",s?.Number("Outline",2)??2).ToString(CultureInfo.InvariantCulture);ColorBox.Text=AssTags.AssToHex(AssTags.Get(row,"c",s?.Get("PrimaryColour","&HFFFFFF")??"&HFFFFFF"));BoldBox.IsChecked=AssTags.Number(row,"b",s?.Number("Bold",0)??0)!=0;ItalicBox.IsChecked=AssTags.Number(row,"i",s?.Number("Italic",0)??0)!=0;Wave.Start=row.Start;Wave.End=row.End;
         }else{TextEditor.Text="";NoteBox.Text="";}
-        Overlay.Document=document;Overlay.Selected=row;var p=row!=null?Overlay.Position(row):(0d,0d,2);XBox.Text=p.Item1.ToString("0",CultureInfo.InvariantCulture);YBox.Text=p.Item2.ToString("0",CultureInfo.InvariantCulture);loading=false;draftDirty=false;if(tableDirty)RefreshRows();CountLabel.Text=$"{SubtitleGrid.Items.Count} 句 · 当前 #{selected?.Number??0}";Wave.InvalidateVisual();Overlay.InvalidateDocument();
+        Overlay.Document=document;Overlay.Selected=row;var p=row!=null?Overlay.Position(row):(0d,0d,2);XBox.Text=p.Item1.ToString("0",CultureInfo.InvariantCulture);YBox.Text=p.Item2.ToString("0",CultureInfo.InvariantCulture);loading=false;draftDirty=false;if(tableDirty)RefreshRows();CountLabel.Text=$"{SubtitleGrid.Items.Count} 句 · 当前 #{selected?.Number??0}";Wave.InvalidateVisual();Overlay.InvalidateDocument();ScheduleAssPreview();
     }
     bool ApplyEditor(bool report=true)
     {
@@ -74,7 +74,7 @@ public partial class MainWindow:Window
             Wave.Start=selected.Start;Wave.End=selected.End;Wave.InvalidateVisual();draftDirty=false;UpdateTitle();return true;
         }catch(Exception ex){if(report)MessageBox.Show(this,ex.Message,"不能提交",MessageBoxButton.OK,MessageBoxImage.Warning);return false;}
     }
-    void DraftChanged(object sender,TextChangedEventArgs e){if(!ready||loading)return;draftDirty=true;UpdateTitle();}
+    void DraftChanged(object sender,TextChangedEventArgs e){if(!ready||loading)return;draftDirty=true;UpdateTitle();ScheduleAssPreview();}
     void SelectRow(AssRow? row,bool seek=true){if(row==null)return;if(!ApplyEditor())return;loading=true;selected=row;SubtitleGrid.SelectedItems.Clear();SubtitleGrid.SelectedItem=row;SubtitleGrid.ScrollIntoView(row);loading=false;LoadEditor();EnsureWave(row.Start);if(seek)Seek(row.Start);}
     void RowSelected(object sender,SelectionChangedEventArgs e){if(loading||!ready)return;var next=SubtitleGrid.SelectedItem as AssRow;if(next==selected)return;if(!ApplyEditor()){loading=true;SubtitleGrid.SelectedItem=selected;loading=false;return;}selected=next;LoadEditor();if(next!=null){EnsureWave(next.Start);Seek(next.Start);}}
     void GridDoubleClick(object sender,MouseButtonEventArgs e){EditorTabs.SelectedIndex=0;TextEditor.Focus();}
@@ -153,5 +153,5 @@ public partial class MainWindow:Window
     void RecoveryClick(object sender,RoutedEventArgs e)=>Guard(()=>{Directory.CreateDirectory(recoveryDir);Process.Start(new ProcessStartInfo("explorer.exe",recoveryDir){UseShellExecute=true});});
     void WindowClosing(object? sender,CancelEventArgs e){if(!SmokeMode&&!ConfirmDiscard()){e.Cancel=true;return;}DisposeMediaMenuResources();decodeCancel?.Cancel();StopPlaybackRendering();timer.Stop();autosave.Stop();Player.Close();CloseAudio();}
     void WindowDrop(object sender,DragEventArgs e){if(e.Data.GetData(DataFormats.FileDrop) is not string[] files||files.Length==0)return;string path=files[0];if(new[]{".ass",".ssa",".srt"}.Contains(Path.GetExtension(path).ToLowerInvariant()))Guard(()=>OpenSubtitle(path));else OpenMedia(path);}
-    void HelpClick(object sender,RoutedEventArgs e)=>MessageBox.Show(this,"常用 Aegisub 键位（按焦点生效）\n\n编辑正文：Enter 提交下一句；Shift+Enter 换行。\n非文字输入区域（含列表、播放按钮）：S/Space/R 播放选段，H 停止，G 提交下一句。\nQ/W/E/D：起点前 / 终点后 / 起点后 / 终点前 500ms。\nZ/X：上一句 / 下一句；波形内左右键切句；A/F：滚动波形。\nCtrl+I：时间平移；Ctrl+5：贴齐关键帧场景；Ctrl+6：整体对齐视频。\nCtrl+3/4：用播放位置设置起点 / 终点。\nCtrl+1/2：视频定位句首 / 句尾；Ctrl+G 跳转；Ctrl+P 播放/暂停。\nF11 全屏工作区；Esc 恢复。\nCtrl+S 或 F2 保存；Ctrl+Shift+S 另存；工具栏撤销修改。\n小键盘（NumLock 开启、非输入框）：5 播放、8 停止、1/3 前后试听、0/2 切句。\n正文、说话人、时间、批注等输入区：字母不触发打轴；Ctrl+P 播放暂停。\n\n当前为 Alpha：媒体依赖 Windows 解码器；预览仅支持基础字体/颜色/描边/定位，不是 libass 完整渲染。复杂 ASS 特效、未知字段原样保留，但显示可能不同。\n尚未实现逐帧精确 VFR 定位、全部键位自定义、完整卡拉 OK 预览 / Automation 4 插件兼容。自动化菜单已提供受限 Lua 宏、预览和撤销；时间菜单支持卡拉 OK 计时转移。\n\n自动恢复在程序旁 Recovery 文件夹；保存前生成备份。","快捷键与限制",MessageBoxButton.OK,MessageBoxImage.Information);
+    void HelpClick(object sender,RoutedEventArgs e)=>MessageBox.Show(this,"常用 Aegisub 键位（按焦点生效）\n\n编辑正文：Enter 提交下一句；Shift+Enter 换行。\n非文字输入区域（含列表、播放按钮）：S/Space/R 播放选段，H 停止，G 提交下一句。\nQ/W/E/D：起点前 / 终点后 / 起点后 / 终点前 500ms。\nZ/X：上一句 / 下一句；波形内左右键切句；A/F：滚动波形。\nCtrl+I：时间平移；Ctrl+5：贴齐关键帧场景；Ctrl+6：整体对齐视频。\nCtrl+3/4：用播放位置设置起点 / 终点。\nCtrl+1/2：视频定位句首 / 句尾；Ctrl+G 跳转；Ctrl+P 播放/暂停。\nF11 全屏工作区；Esc 恢复。\nCtrl+S 或 F2 保存；Ctrl+Shift+S 另存；工具栏撤销修改。\n小键盘（NumLock 开启、非输入框）：5 播放、8 停止、1/3 前后试听、0/2 切句。\n正文、说话人、时间、批注等输入区：字母不触发打轴；Ctrl+P 播放暂停。\n\n当前为 Alpha：媒体依赖 Windows 解码器；精确 ASS 模式使用 FFmpeg/libass 渲染动画、卡拉 OK、遮罩；轻量模式只用于基础排版。预览按源尺寸渲染后缩至最高 720p / 30fps，系统视频定位与颜色显示仍可能和成片不同，可用成片对照检查。\n尚未实现逐帧精确 VFR 定位、全部键位自定义、完整 Automation 4 插件兼容。自动化菜单已提供受限 Lua 宏、预览和撤销；时间菜单支持卡拉 OK 计时转移。\n\n自动恢复在程序旁 Recovery 文件夹；保存前生成备份。","快捷键与限制",MessageBoxButton.OK,MessageBoxImage.Information);
 }

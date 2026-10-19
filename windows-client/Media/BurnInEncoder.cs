@@ -65,7 +65,7 @@ internal static class BurnInEncoder
         string S(double v)=>v.ToString("0.######",CultureInfo.InvariantCulture);double start=r.PreviewStart??0;
         if(r.PreviewStart!=null)args.AddRange(["-ss",S(start)]);args.AddRange(["-i",Path.GetFullPath(r.Input),"-map","0:V:0"]);
         if(r.Audio)args.AddRange(["-map","0:a:0?"]);else args.Add("-an");
-        string filter=(r.PreviewStart!=null?$"setpts=PTS+{S(start)}/TB,":"")+"ass=filename=snapshot.ass:fontsdir=fonts"+(r.PreviewStart!=null?$",setpts=PTS-{S(start)}/TB":"")+",pad=ceil(iw/2)*2:ceil(ih/2)*2";
+        string filter=(r.PreviewStart!=null?$"setpts=PTS+{S(start)}/TB,":"")+AssRendering.Filter()+(r.PreviewStart!=null?$",setpts=PTS-{S(start)}/TB":"")+",pad=ceil(iw/2)*2:ceil(ih/2)*2";
         args.AddRange(["-vf",filter]);args.AddRange(HardwareEncoding.VideoArguments(encoder??HardwareEncoding.Cpu,r.Quality));args.AddRange(["-threads",Math.Clamp(Environment.ProcessorCount/2,1,4).ToString(),"-fps_mode","vfr"]);
         if(r.Audio)args.AddRange(["-c:a","aac","-b:a","192k"]);
         args.AddRange(["-sn","-dn","-map_metadata","0","-map_chapters",r.PreviewStart==null?"0":"-1","-movflags","+faststart"]);
@@ -85,7 +85,7 @@ internal static class BurnInEncoder
             Directory.CreateDirectory(work);Directory.CreateDirectory(fontDir);writer=new StreamWriter(new FileStream(logPath,FileMode.CreateNew,FileAccess.Write,FileShare.Read),new UTF8Encoding(false));
             Log("Frameflow burn-in / source read-only / no overwrite / "+DateTimeOffset.Now);Log("INPUT: "+Path.GetFullPath(r.Input));Log("OUTPUT: "+output);Log("ASS_SHA256: "+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(r.Ass))));Log("FACTS: "+JsonSerializer.Serialize(facts));Log("Requested fonts: "+string.Join(", ",ReferencedFonts(r.Ass)));
             await File.WriteAllTextAsync(Path.Combine(work,"snapshot.ass"),r.Ass,new UTF8Encoding(false),token);owned.Add(Path.Combine(work,"snapshot.ass"));
-            if(r.FontDirectory.Length>0){var fonts=Directory.GetFiles(r.FontDirectory).Where(f=>new[]{".ttf",".otf",".ttc",".otc"}.Contains(Path.GetExtension(f).ToLowerInvariant())).ToArray();if(fonts.Length>200||fonts.Sum(f=>new FileInfo(f).Length)>300_000_000)throw new IOException("字体目录超过 200 个文件 / 300 MB，请选择更小的专用目录。");for(int i=0;i<fonts.Length;i++){token.ThrowIfCancellationRequested();string to=Path.Combine(fontDir,i.ToString("000")+Path.GetExtension(fonts[i]));File.Copy(fonts[i],to,false);owned.Add(to);Log("FONT: "+fonts[i]);}}
+            owned.AddRange(AssRendering.CopyFonts(r.FontDirectory,fontDir,token,Log));
             double length=Math.Min(r.PreviewStart!=null?10:facts.Duration,facts.Duration-(r.PreviewStart??0));
             var selection=r.Acceleration==EncodingAcceleration.CpuOnly
                 ?new EncoderSelection(HardwareEncoding.Cpu,[],"已选择仅 CPU；不检测或启动显卡编码器。")

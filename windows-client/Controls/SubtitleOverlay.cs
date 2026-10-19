@@ -8,7 +8,7 @@ namespace Frameflow.Controls;
 public sealed class SubtitleOverlay:FrameworkElement
 {
     public SubtitleDocument? Document {get;set;}public AssRow? Selected {get;set;}public double Time {get;set;}public double VideoWidth {get;set;}=1920;public double VideoHeight {get;set;}=1080;
-    public bool Editing {get;set;}=true;public event Func<bool>? BeginMove;public event Action<double,double>? Moved;public event Action? EndMove;
+    public bool ShowText {get;set;}=true;public bool Editing {get;set;}=true;public event Func<bool>? BeginMove;public event Action<double,double>? Moved;public event Action? EndMove;
     bool dragging;Point origin;double initialX,initialY;Rect hit;
     DrawingGroup? cachedDrawing;SubtitleDocument? cachedDocument;AssRow? cachedSelected;
     Size cachedSize;double cachedVideoWidth,cachedVideoHeight,cachedDpi,validFrom,validUntil;bool cachedEditing;
@@ -33,7 +33,7 @@ public sealed class SubtitleOverlay:FrameworkElement
             cachedDocument=Document;cachedSelected=Selected;cachedSize=RenderSize;cachedVideoWidth=VideoWidth;cachedVideoHeight=VideoHeight;cachedDpi=dpi;cachedEditing=Editing;
             var drawing=new DrawingGroup();using(var context=drawing.Open())DrawSubtitles(context);drawing.Freeze();cachedDrawing=drawing;DrawingBuilds++;
         }
-        dc.DrawDrawing(cachedDrawing);
+        if(ShowText)dc.DrawDrawing(cachedDrawing);else if(Editing&&!hit.IsEmpty)dc.DrawRectangle(null,new Pen(Brushes.DeepSkyBlue,1),hit);
     }
     void DrawSubtitles(DrawingContext dc)
     {

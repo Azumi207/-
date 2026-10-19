@@ -22,15 +22,15 @@ internal sealed class BurnInDialog:SubtitleToolDialog
     internal EncodeResult? LastResult {get;private set;}
     internal string? LastError {get;private set;}
     internal Task? Running {get;private set;}
-    internal BurnInDialog(string snapshot,string? video,double current):base("压制字幕到视频 · 保留 ASS 样式",810,820)
+    internal BurnInDialog(string snapshot,string? video,double current,string initialFontDirectory=""):base("压制字幕到视频 · 保留 ASS 样式",810,820)
     {
-        ass=snapshot;Hint("把当前字幕烧录到画面，任何播放器都能看到。采用 FFmpeg + libass，不使用编辑器的简化预览。输出 MP4（H.264 / AAC），原视频、字幕不覆盖。字幕是打开此窗口时的快照，包含已提交的未保存编辑。");
+        ass=snapshot;Hint("把当前字幕烧录到画面，任何播放器都能看到。采用 FFmpeg + libass，与精确 ASS 预览共用渲染引擎与字体规则。输出 MP4（H.264 / AAC），原视频、字幕不覆盖。字幕是打开此窗口时的快照，包含已提交的未保存编辑。");
         InputVideo=Input(Body,"① 视频文件",video??"");OutputVideo=Input(Body,"② 输出 MP4",video!=null&&File.Exists(video)?BurnInEncoder.SuggestOutput(video):"");
         var paths=new WrapPanel();Body.Children.Add(paths);inputs.Add(Action("选择视频…",()=>{var p=new OpenFileDialog{Filter="视频|*.mp4;*.mkv;*.avi;*.mov;*.m4v;*.wmv;*.webm|所有文件|*.*"};if(p.ShowDialog(this)==true){InputVideo.Text=p.FileName;OutputVideo.Text=BurnInEncoder.SuggestOutput(p.FileName);}},paths));inputs.Add(Action("选择输出位置…",()=>{var p=new SaveFileDialog{Filter="MP4 视频|*.mp4",FileName=OutputVideo.Text.Length>0?Path.GetFileName(OutputVideo.Text):"字幕视频.mp4",OverwritePrompt=false};if(p.ShowDialog(this)==true)OutputVideo.Text=p.FileName;},paths));
         Quality=Choice(Body,"③ 画质",["推荐 · 清晰与体积平衡","更高画质","较小文件"]);
         Acceleration=Choice(Body,"加速方式",["自动（优先显卡，失败回退 CPU）","仅 CPU（兼容优先）"]);Body.Children.Add(EncoderLabel);Hint("仅加速视频编码；字幕仍由 CPU 上的 libass 渲染。不同编码器的体积/画质不完全相同，建议先预览。");Body.Children.Add(KeepAudio);
         var advanced=new StackPanel();var expander=new Expander{Header="字体与预览设置（可选）",Content=advanced,Margin=new Thickness(3,6,3,8)};Body.Children.Add(expander);
-        FontDirectory=Input(advanced,"附加字体文件夹（留空使用本机字体；TTF / OTF / TTC）");inputs.Add(Action("选择字体文件夹…",()=>{var p=new OpenFolderDialog{Title="选择字幕使用的字体目录"};if(p.ShowDialog(this)==true)FontDirectory.Text=p.FolderName;},advanced));PreviewTime=Input(advanced,"10 秒预览起点（秒或 h:mm:ss.cc）",Timecode.Ass(Math.Max(0,current)));
+        FontDirectory=Input(advanced,"附加字体文件夹（留空使用本机字体；TTF / OTF / TTC）",initialFontDirectory);inputs.Add(Action("选择字体文件夹…",()=>{var p=new OpenFolderDialog{Title="选择字幕使用的字体目录"};if(p.ShowDialog(this)==true)FontDirectory.Text=p.FolderName;},advanced));PreviewTime=Input(advanced,"10 秒预览起点（秒或 h:mm:ss.cc）",Timecode.Ass(Math.Max(0,current)));
         string[] fonts=BurnInEncoder.ReferencedFonts(ass).ToArray();var installed=new HashSet<string>(Fonts.SystemFontFamilies.SelectMany(f=>f.FamilyNames.Values.Append(f.Source)),StringComparer.OrdinalIgnoreCase);var missing=fonts.Where(f=>!installed.Contains(f.TrimStart('@'))).ToArray();
         var fontHint=new TextBlock{Text="字幕字体："+string.Join("、",fonts)+(missing.Length>0?"\n本机名称未匹配："+string.Join("、",missing)+"。可提供字体目录，务必先预览；缺字/替代字体可能改变排版。":"\n字体版本或复杂标签仍可能存在渲染差异，建议先预览。"),TextWrapping=TextWrapping.Wrap,Foreground=missing.Length>0?Frameflow.Core.Appearance.Brush("WarningBrush"):Frameflow.Core.Appearance.Brush("MutedBrush"),Margin=new Thickness(3,6,3,8)};Body.Children.Add(fontHint);
         Hint("保留原尺寸与时间戳节奏；奇数宽高最多补 1 像素。当前仅 SDR，HDR 会拒绝而不是自动偏色转换。音轨取源视频第一条；不复制软字幕、附件和其他音轨。视频中的字体附件请先导出到附加字体目录。");Body.Children.Add(Progress);Body.Children.Add(StatusLabel);Body.Children.Add(Message);

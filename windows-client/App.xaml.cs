@@ -21,6 +21,11 @@ public partial class App:Application
             catch(Exception ex){Console.Error.WriteLine(ex);Shutdown(1);}return;
         }
         var window=new MainWindow();MainWindow=window;
+        if(e.Args.Contains("--preview-test"))
+        {
+            string dir=Path.GetFullPath(e.Args.SkipWhile(a=>a!="--preview-test").Skip(1).First());Directory.CreateDirectory(dir);Frameflow.Core.Appearance.Initialize(Path.Combine(dir,"appearance.json"),false);window.SmokeMode=true;window.Show();
+            try{await window.RunPreviewTestsAsync(dir);Shutdown(0);}catch(Exception ex){File.WriteAllText(Path.Combine(dir,"preview-error.txt"),ex.ToString());Console.Error.WriteLine(ex);Shutdown(1);}return;
+        }
         if(e.Args.Contains("--appearance-test"))
         {
             string dir=appearanceOutput!;Directory.CreateDirectory(dir);window.SmokeMode=true;window.Show();
@@ -37,6 +42,6 @@ public partial class App:Application
             var dir=e.Args.SkipWhile(s=>s!="--ui-smoke").Skip(1).FirstOrDefault()??Path.Combine(AppContext.BaseDirectory,"test-output");Directory.CreateDirectory(dir);window.SmokeMode=true;window.ShowActivated=true;window.Topmost=true;window.Show();window.Activate();
             try{await window.RunSmokeAsync(dir);Shutdown(0);}catch(Exception ex){File.WriteAllText(Path.Combine(dir,"ui-error.txt"),ex.ToString());Console.Error.WriteLine(ex);Shutdown(1);}return;
         }
-        window.Show();if(e.Args.Length>0&&File.Exists(e.Args[0])){try{window.OpenSubtitle(e.Args[0]);}catch(Exception ex){MessageBox.Show(ex.Message,"打开字幕失败");}}
+        window.Show();if(e.Args.Length>0&&File.Exists(e.Args[0])){try{window.OpenSubtitle(e.Args[0]);}catch(Exception ex){MessageBox.Show(ex.Message,"鎵撳紑瀛楀箷澶辫触");}}
     }
 }

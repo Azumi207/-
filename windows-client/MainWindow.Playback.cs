@@ -17,7 +17,7 @@ public partial class MainWindow
     public int PlaybackUiUpdates {get;private set;}
     bool renderingPlayback;double lastRenderMs=double.NegativeInfinity,lastTextUpdate=double.NaN;
     public int PlaybackRenderCallbacks {get;private set;}
-    void StartPlaybackRendering(){if(renderingPlayback)return;renderingPlayback=true;lastRenderMs=double.NegativeInfinity;CompositionTarget.Rendering+=PlaybackRendering;}
+    void StartPlaybackRendering(){ScheduleAssPreview(true);if(renderingPlayback)return;renderingPlayback=true;lastRenderMs=double.NegativeInfinity;CompositionTarget.Rendering+=PlaybackRendering;}
     void StopPlaybackRendering(){if(!renderingPlayback)return;renderingPlayback=false;CompositionTarget.Rendering-=PlaybackRendering;}
     void PlaybackRendering(object? sender,EventArgs e)
     {
@@ -75,7 +75,7 @@ public partial class MainWindow
     {
         PlaybackUiUpdates++;timerSeeking=true;SeekBar.Value=t;timerSeeking=false;
         if(!playing||double.IsNaN(lastTextUpdate)||Math.Abs(t-lastTextUpdate)>=.1){PositionLabel.Text=Timecode.Ass(t);lastTextUpdate=t;}
-        if(video)Overlay.UpdateTime(t);
+        if(video){Overlay.UpdateTime(t);AdvanceAssPreview(t);}
         Wave.Position=t;if(follow&&!Wave.Dragging)EnsureWave(t);
     }
     void Tick()
@@ -90,9 +90,9 @@ public partial class MainWindow
         t=Math.Clamp(t,0,Math.Max(duration,selected?.End??0));
         if(AudioMode){pendingAudioPosition=t;if(audioReady)AudioPlayer.Position=TimeSpan.FromSeconds(t);}
         else if(dummyVideo){dummyPosition=t;if(dummyClock.IsRunning)dummyClock.Restart();}else if(mediaReady)Player.Position=TimeSpan.FromSeconds(t);
-        UpdatePlaybackUi(t,!AudioMode,follow&&Linked.IsChecked==true);
+        UpdatePlaybackUi(t,!AudioMode,follow&&Linked.IsChecked==true);if(!AudioMode)ScheduleAssPreview(true);
     }
-    void Pause(){if(dummyVideo){dummyPosition=VideoPositionSeconds;dummyClock.Reset();}playing=false;timer.Stop();StopPlaybackRendering();Player.Pause();AudioPlayer.Pause();PlayButton.Content="播放";stopAt=double.PositiveInfinity;}
+    void Pause(){if(dummyVideo){dummyPosition=VideoPositionSeconds;dummyClock.Reset();}playing=false;timer.Stop();StopPlaybackRendering();Player.Pause();AudioPlayer.Pause();PlayButton.Content="播放";stopAt=double.PositiveInfinity;ScheduleAssPreview(true);}
     void PlayRange(double a,double b)
     {
         if(!PlaybackReady){if(AudioMode){PrepareAudio();Status.Text="纯音频尚未就绪，请等待音轨准备完成。";}else Status.Text="请先打开可播放的媒体。";return;}

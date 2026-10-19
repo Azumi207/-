@@ -55,7 +55,7 @@ public partial class MainWindow
     }
     void SeekVideoOnly(double position)
     {
-        if(!VideoAvailable)throw new InvalidOperationException("未打开视频。");if(!double.IsFinite(position)||position<0||position>VideoDuration)throw new FormatException("定位超出视频时长。");Pause();if(dummyVideo)dummyPosition=position;else Player.Position=TimeSpan.FromSeconds(position);Overlay.UpdateTime(position);if(!AudioMode)UpdatePlaybackUi(position,true,Linked.IsChecked==true);Status.Text="视频位置："+Timecode.Ass(position)+(dummyVideo?"（虚拟）":"（系统定位，非逐帧解码保证）");
+        if(!VideoAvailable)throw new InvalidOperationException("未打开视频。");if(!double.IsFinite(position)||position<0||position>VideoDuration)throw new FormatException("定位超出视频时长。");Pause();if(dummyVideo)dummyPosition=position;else Player.Position=TimeSpan.FromSeconds(position);Overlay.UpdateTime(position);ScheduleAssPreview(true);if(!AudioMode)UpdatePlaybackUi(position,true,Linked.IsChecked==true);Status.Text="视频位置："+Timecode.Ass(position)+(dummyVideo?"（虚拟）":"（系统定位，非逐帧解码保证）");
     }
     void SetVideoAspect(string value)
     {
@@ -69,7 +69,7 @@ public partial class MainWindow
         VideoViewport.HorizontalScrollBarVisibility=VideoViewport.VerticalScrollBarVisibility=videoZoom>0?ScrollBarVisibility.Auto:ScrollBarVisibility.Disabled;
         VideoSurface.Width=videoZoom>0?sourceVideoWidth*videoZoom:Math.Max(1,VideoViewport.ActualWidth-2);VideoSurface.Height=videoZoom>0?sourceVideoWidth/ratio*videoZoom:Math.Max(1,VideoViewport.ActualHeight-2);UpdateVideoRectangle();
     }
-    void UpdateVideoRectangle(){if(!ready)return;var rect=Overlay.ContentRect;Player.Width=rect.Width;Player.Height=rect.Height;SafeGuides.Frame=rect;SafeGuides.InvalidateVisual();Overlay.InvalidateDocument();}
+    void UpdateVideoRectangle(){if(!ready)return;var rect=Overlay.ContentRect;Player.Width=rect.Width;Player.Height=rect.Height;SafeGuides.Frame=rect;SafeGuides.InvalidateVisual();Overlay.InvalidateDocument();preciseSurface.Frame=rect;preciseSurface.InvalidateVisual();ScheduleAssPreview();}
     void SetVideoDetached(bool detach)
     {
         if(detach&&detachedVideo==null){MediaSplitGrid.Children.Remove(VideoPanel);var window=new Window{Title="帧语 · 视频预览",Width=900,Height=620,MinWidth=400,MinHeight=260,Owner=this,ShowActivated=!SmokeMode,Content=VideoPanel};detachedVideo=window;window.PreviewKeyDown+=WindowKeyDown;window.Closed+=(_,_)=>{window.Content=null;detachedVideo=null;if(!MediaSplitGrid.Children.Contains(VideoPanel))MediaSplitGrid.Children.Add(VideoPanel);DetachVideoItem.IsChecked=false;ApplyWorkspaceLayout();UpdateVideoPresentation();};window.Show();}
