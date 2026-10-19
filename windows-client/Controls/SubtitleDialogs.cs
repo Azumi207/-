@@ -13,14 +13,14 @@ namespace Frameflow.Controls;
 internal class SubtitleToolDialog:Window
 {
     protected readonly StackPanel Body=new(){Margin=new Thickness(16)};
-    internal readonly TextBlock Message=new(){TextWrapping=TextWrapping.Wrap,Foreground=Brushes.DarkRed,Margin=new Thickness(3,8,3,4)};
+    internal readonly TextBlock Message=new(){TextWrapping=TextWrapping.Wrap,Foreground=Frameflow.Core.Appearance.Brush("ErrorBrush"),Margin=new Thickness(3,8,3,4)};
     protected readonly StackPanel Actions=new(){Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(12)};
     protected SubtitleToolDialog(string title,double width=640,double height=600)
     {
         Title=title;Width=width;Height=height;MinWidth=460;MinHeight=360;WindowStartupLocation=WindowStartupLocation.CenterOwner;ShowInTaskbar=false;
         var dock=new DockPanel();DockPanel.SetDock(Actions,Dock.Bottom);dock.Children.Add(Actions);dock.Children.Add(new ScrollViewer{Content=Body,VerticalScrollBarVisibility=ScrollBarVisibility.Auto});Content=dock;
     }
-    protected void Hint(string text)=>Body.Children.Add(new TextBlock{Text=text,TextWrapping=TextWrapping.Wrap,Foreground=Brushes.SlateGray,Margin=new Thickness(3,5,3,10)});
+    protected void Hint(string text)=>Body.Children.Add(new TextBlock{Text=text,TextWrapping=TextWrapping.Wrap,Foreground=Frameflow.Core.Appearance.Brush("MutedBrush"),Margin=new Thickness(3,5,3,10)});
     internal static TextBox Input(Panel panel,string label,string value="",bool multiline=false)
     {
         panel.Children.Add(new TextBlock{Text=label,Margin=new Thickness(3,6,3,1)});var text=new TextBox{Text=value,MinHeight=multiline?76:28,AcceptsReturn=multiline,TextWrapping=TextWrapping.Wrap,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};panel.Children.Add(text);return text;
@@ -33,7 +33,7 @@ internal class SubtitleToolDialog:Window
     {
         var button=new Button{Content=label,MinWidth=80};button.Click+=(_,_)=>Attempt(action);(parent??Actions).Children.Add(button);return button;
     }
-    protected void Attempt(Action action){try{Message.Text="";action();}catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or FormatException or OverflowException or System.IO.IOException or UnauthorizedAccessException or RegexMatchTimeoutException){Message.Foreground=Brushes.DarkRed;Message.Text=ex.Message;}}
+    protected void Attempt(Action action){try{Message.Text="";action();}catch(Exception ex) when(ex is ArgumentException or InvalidOperationException or FormatException or OverflowException or System.IO.IOException or UnauthorizedAccessException or RegexMatchTimeoutException){Message.Foreground=Frameflow.Core.Appearance.Brush("ErrorBrush");Message.Text=ex.Message;}}
     protected void Finish(){Body.Children.Add(Message);Action("取消",()=>DialogResult=false);}
 }
 

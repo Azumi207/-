@@ -17,6 +17,8 @@ public partial class MainWindow
         check(audioReady&&audioCachePath!=null&&File.Exists(audioCachePath),"audio-only cache extracted from real AVI and opens");
         check(AudioPlayer.HasAudio&&!AudioPlayer.HasVideo,"audio-only player has audio and no video track");
         check(KeyFromWave(Key.S)&&playing,"S starts independent audio-only playback");await ObservePlaybackFrames(3);
+        // Three compositor frames are not 150 ms on fast displays. Observe the real clock.
+        var clockDeadline=DateTime.UtcNow.AddSeconds(1);while(AudioPlayer.Position.TotalSeconds<=.65&&DateTime.UtcNow<clockDeadline)await Task.Delay(16);
         check(AudioPlayer.Position.TotalSeconds>.65,"audio-only playback clock advances");
         check(Math.Abs(Player.Position.TotalSeconds-videoTime)<.02&&Math.Abs(Overlay.Time-subtitleTime)<.001,"video and subtitle preview stay frozen during audio-only playback");
         double waveTime=Wave.Position,audioTime=AudioPlayer.Position.TotalSeconds;

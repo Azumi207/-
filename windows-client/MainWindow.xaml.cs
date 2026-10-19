@@ -27,7 +27,7 @@ public partial class MainWindow:Window
     bool ready,tableDirty;
     public MainWindow()
     {
-        InitializeComponent();ready=true;
+        InitializeComponent();InitializeAppearance();ready=true;
         FontBox.ItemsSource=Fonts.SystemFontFamilies.Select(f=>f.Source).Order().ToArray();
         // IME completion can already be handled by a text control; observe it anyway.
         AddHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler((_,_)=>composing=true),true);
@@ -47,7 +47,7 @@ public partial class MainWindow:Window
     }
     void Guard(Action action){try{action();}catch(Exception ex){MessageBox.Show(this,ex.Message,"帧语",MessageBoxButton.OK,MessageBoxImage.Warning);Status.Text=ex.Message;}}
     void MarkDirty(){dirty=true;tableDirty=true;Overlay.InvalidateDocument();UpdateTitle();}
-    void UpdateTitle(){Title=$"{(dirty||draftDirty?"* ":"")}{Path.GetFileName(subtitlePath)??"未命名.ass"} — 帧语 Windows Alpha 0.2.0";FileLabel.Text=subtitlePath??"未命名.ass";}
+    void UpdateTitle(){Title=$"{(dirty||draftDirty?"* ":"")}{Path.GetFileName(subtitlePath)??"未命名.ass"} — 帧语 Windows Alpha 0.2.0 · 新版界面";FileLabel.Text=Path.GetFileName(subtitlePath)??"未命名.ass";FileLabel.ToolTip=subtitlePath??"尚未保存的字幕";}
     Snapshot Capture()=>new(document.Serialize(),document.Rows.Select(r=>(r.Note,r.Reviewed)).ToArray(),selected?.Number-1??0);
     void PushUndo(){undo.Push(Capture());redo.Clear();if(undo.Count>150){var keep=undo.Take(100).Reverse().ToArray();undo.Clear();foreach(var s in keep)undo.Push(s);}}
     void Restore(Snapshot snapshot){document=SubtitleDocument.Parse(snapshot.Text);var rows=document.Rows.ToArray();for(int i=0;i<Math.Min(rows.Length,snapshot.Notes.Length);i++){rows[i].Note=snapshot.Notes[i].Note;rows[i].Reviewed=snapshot.Notes[i].Reviewed;}draftDirty=false;RefreshAll(snapshot.Index);MarkDirty();}

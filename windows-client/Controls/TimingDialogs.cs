@@ -100,7 +100,7 @@ internal sealed class FrameTimingDialog:SubtitleToolDialog
         if(Busy||media==null||closed)return;Busy=true;analyze.IsEnabled=apply.IsEnabled=false;cancellation=new CancellationTokenSource();var token=cancellation.Token;Message.Foreground=Brushes.DarkSlateGray;Message.Text="正在扫描媒体样本…（不解码画面）";
         try{var progress=new Progress<int>(n=>{if(!closed&&!token.IsCancellationRequested)Message.Text=$"已读取 {n:N0} 个视频样本…";});var result=await Task.Run(()=>VideoFrameIndex.Read(media,token,progress),token);if(!closed&&!token.IsCancellationRequested){Timeline=result;EndTime.Text=result.End.ToString("0.######",CultureInfo.InvariantCulture);Refresh();Message.Text="分析完成；点击使用此帧表生效。";}}
         catch(OperationCanceledException){if(!closed)Message.Text="已取消；保留之前的帧表。";}
-        catch(Exception ex){if(!closed){Message.Foreground=Brushes.DarkRed;Message.Text="无法生成可靠帧表："+ex.Message+"。可导入外部时间码与关键帧。";}}
+        catch(Exception ex){if(!closed){Message.Foreground=Frameflow.Core.Appearance.Brush("ErrorBrush");Message.Text="无法生成可靠帧表："+ex.Message+"。可导入外部时间码与关键帧。";}}
         finally{Busy=false;cancellation.Dispose();cancellation=null;if(!closed){analyze.IsEnabled=media!=null;apply.IsEnabled=true;}}
     }
     static string Read(string path){if(new FileInfo(path).Length>64*1024*1024)throw new IOException("帧数据文件超过 64 MB。");return File.ReadAllText(path);}

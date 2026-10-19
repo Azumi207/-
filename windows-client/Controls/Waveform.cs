@@ -22,13 +22,15 @@ public sealed class Waveform:FrameworkElement
     void MovePlayhead(){double x=X(position);playhead.Opacity=x>=0&&x<=ActualWidth?1:0;playheadTransform.X=x;}
     double X(double time)=>(time-ViewStart)/Span*ActualWidth;
     double TimeAt(double x)=>Math.Clamp(ViewStart+x/Math.Max(1,ActualWidth)*Span,0,Math.Max(Duration,End+2));
-    static readonly Brush Bg=new SolidColorBrush(Color.FromRgb(9,23,14)),Green=new SolidColorBrush(Color.FromRgb(111,204,121));
+    // Clone brushes before freezing cached geometry; never freeze the app's live theme palette.
+    static Brush ColorBrush(string key)=>Frameflow.Core.Appearance.Brush(key).CloneCurrentValue();
+    public void RefreshTheme(){background=null;InvalidateVisual();}
     DrawingGroup? background;float[]? cachedPeaks;double cachedView,cachedSpan,cachedDpi,cachedGain;Size cachedSize;ImageSource? cachedSpectrum;bool cachedSpectrumMode;
     public int BackgroundBuilds {get;private set;}
     protected override void OnRender(DrawingContext dc)
     {
-        base.OnRender(dc);StaticRenders++;double w=ActualWidth,h=ActualHeight;if(w<=0||h<=0)return;dc.DrawRectangle(Bg,null,new Rect(0,0,w,h));double center=24+(h-34)/2;
-        var selLeft=Math.Clamp(X(Start),0,w);var selRight=Math.Clamp(X(End),0,w);if(selRight>selLeft)dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(48,64,160,80)),null,new Rect(selLeft,24,selRight-selLeft,h-24));
+        base.OnRender(dc);StaticRenders++;double w=ActualWidth,h=ActualHeight;if(w<=0||h<=0)return;dc.DrawRoundedRectangle(ColorBrush("FieldBackground"),null,new Rect(0,0,w,h),12,12);double center=24+(h-34)/2;
+        var selLeft=Math.Clamp(X(Start),0,w);var selRight=Math.Clamp(X(End),0,w);if(selRight>selLeft)dc.DrawRectangle(ColorBrush("SelectionBrush"),null,new Rect(selLeft,24,selRight-selLeft,h-24));
         double dpi=VisualTreeHelper.GetDpi(this).PixelsPerDip;
         if(background==null||cachedPeaks!=Peaks||cachedView!=ViewStart||cachedSpan!=Span||cachedSize!=RenderSize||cachedDpi!=dpi||cachedSpectrum!=Spectrum||cachedSpectrumMode!=SpectrumMode||cachedGain!=Gain)
         {
@@ -36,20 +38,21 @@ public sealed class Waveform:FrameworkElement
             cachedPeaks=Peaks;cachedView=ViewStart;cachedSpan=Span;cachedSize=RenderSize;cachedDpi=dpi;cachedSpectrum=Spectrum;cachedSpectrumMode=SpectrumMode;cachedGain=Gain;BackgroundBuilds++;
         }
         dc.DrawDrawing(background);
-        foreach(var gap in Gaps){double a=Math.Clamp(X(gap.Start),0,w),b=Math.Clamp(X(gap.End),0,w);if(b>a)dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(170,245,171,61)),null,new Rect(a,24,Math.Max(3,b-a),h-24));}
-        Boundary(dc,Start,Brushes.Salmon,"起");Boundary(dc,End,Brushes.LightSkyBlue,"止");
-        using(var line=playhead.RenderOpen())line.DrawLine(new Pen(Brushes.White,1),new Point(0,24),new Point(0,h));MovePlayhead();
+        foreach(var gap in Gaps){double a=Math.Clamp(X(gap.Start),0,w),b=Math.Clamp(X(gap.End),0,w);if(b>a)dc.DrawRectangle(ColorBrush("WaveGapBrush"),null,new Rect(a,24,Math.Max(3,b-a),h-24));}
+        Boundary(dc,Start,ColorBrush("WaveStartBrush"),"起");Boundary(dc,End,ColorBrush("WaveEndBrush"),"止");
+        using(var line=playhead.RenderOpen())line.DrawLine(new Pen(ColorBrush("ForegroundBrush"),1),new Point(0,24),new Point(0,h));MovePlayhead();
     }
     void DrawBackground(DrawingContext dc,double w,double h,double center)
     {
-        if(SpectrumMode){if(Spectrum!=null)dc.DrawImage(Spectrum,new Rect(0,24,w,h-24));else DrawText(dc,"正在准备当前视窗频谱…",new Point(12,center),Brushes.LightGray);}
+        if(SpectrumMode){if(Spectrum!=null)dc.DrawImage(Spectrum,new Rect(0,24,w,h-24));else DrawText(dc,"正在准备当前视窗频谱…",new Point(12,center),ColorBrush("MutedBrush"));}
         double interval=Span<=5?1:Span<=15?2:Span<=40?5:10;
-        for(double t=Math.Ceiling(ViewStart/interval)*interval;t<=ViewStart+Span;t+=interval){double x=X(t);dc.DrawLine(new Pen(new SolidColorBrush(Color.FromRgb(28,55,34)),1),new Point(x,24),new Point(x,h));DrawText(dc,$"{(int)t/60:00}:{t%60:00.0}",new Point(Math.Clamp(x+2,0,Math.Max(0,w-56)),2),Green);}
+        double lastLabelRight=-10;
+        for(double t=Math.Ceiling(ViewStart/interval)*interval;t<=ViewStart+Span;t+=interval){double x=X(t);dc.DrawLine(new Pen(ColorBrush("BorderBrush"),1),new Point(x,24),new Point(x,h));double labelX=Math.Clamp(x+2,0,Math.Max(0,w-56));if(labelX>=lastLabelRight+8){DrawText(dc,$"{(int)t/60:00}:{t%60:00.0}",new Point(labelX,2),ColorBrush("MutedBrush"));lastLabelRight=labelX+52;}}
         if(SpectrumMode)return;
-        if(Peaks.Length==0)DrawText(dc,"打开视频或音频后生成真实波形",new Point(12,center-10),Brushes.LightGray);
+        if(Peaks.Length==0)DrawText(dc,"打开视频或音频后生成真实波形",new Point(12,center-10),ColorBrush("MutedBrush"));
         else
         {
-            var geom=new StreamGeometry();using(var ctx=geom.Open()){for(int px=0;px<w;px+=2){int a=Math.Max(0,(int)((ViewStart+px/w*Span)*100)),b=Math.Min(Peaks.Length,(int)((ViewStart+(px+2)/w*Span)*100)+1);float peak=0;for(int i=a;i<b;i++)peak=Math.Max(peak,Peaks[i]);double amp=Math.Min(1,peak*Gain)*(h-40)*.48;ctx.BeginFigure(new Point(px,center-amp),false,false);ctx.LineTo(new Point(px,center+amp),true,false);}}geom.Freeze();dc.DrawGeometry(null,new Pen(Green,1),geom);
+            var geom=new StreamGeometry();using(var ctx=geom.Open()){for(int px=0;px<w;px+=2){int a=Math.Max(0,(int)((ViewStart+px/w*Span)*100)),b=Math.Min(Peaks.Length,(int)((ViewStart+(px+2)/w*Span)*100)+1);float peak=0;for(int i=a;i<b;i++)peak=Math.Max(peak,Peaks[i]);double amp=Math.Min(1,peak*Gain)*(h-40)*.48;ctx.BeginFigure(new Point(px,center-amp),false,false);ctx.LineTo(new Point(px,center+amp),true,false);}}geom.Freeze();dc.DrawGeometry(null,new Pen(ColorBrush("WaveBrush"),1),geom);
         }
     }
     void Boundary(DrawingContext dc,double time,Brush brush,string text){double x=X(time);if(x<0||x>ActualWidth)return;dc.DrawLine(new Pen(brush,2),new Point(x,24),new Point(x,ActualHeight));DrawText(dc,text,new Point(Math.Min(x+3,ActualWidth-20),26),brush);}

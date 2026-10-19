@@ -73,7 +73,7 @@ public partial class MainWindow
         found=FindText("中文","字幕正文",true,true,true);check(selected?.Number==1&&found.Contains("1 / 2"),"find previous returns to earlier row");
         check(FindText("Default","样式",true,true,false).Contains("处"),"find supports style field scope");
         SelectRow(document.Rows.First());TextEditor.Text="甲\r\n乙";ApplyEditor();FindText("乙","字幕正文",true,true,false);check(TextEditor.SelectedText=="乙","find highlight maps correctly after a subtitle line break");
-        check(HandleShortcut(Key.F,ModifierKeys.Control,true,true,false)&&findDialog!=null,"Ctrl+F opens modeless find while editing text");await Task.Delay(100);MenuVisuals<TextBox>(findDialog!).Single().Text="中文";findDialog!.Search(false);
+        check(HandleShortcut(Key.F,ModifierKeys.Control,true,true,false)&&findDialog!=null,"Ctrl+F opens modeless find while editing text");await Task.Delay(100);MenuVisuals<TextBox>(findDialog!).Single(t=>t.IsVisible).Text="中文";findDialog!.Search(false);
         // SizeToContent can schedule a second native-window layout after result text changes.
         await Dispatcher.InvokeAsync(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         var layoutDeadline=DateTime.UtcNow.AddSeconds(3);while((findDialog.ActualWidth<=0||findDialog.ActualHeight<=0)&&DateTime.UtcNow<layoutDeadline)await Task.Delay(50);

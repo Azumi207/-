@@ -15,8 +15,8 @@ public sealed class SelectivePasteDialog:Window
         panel.Children.Add(new TextBlock{Text="只覆盖勾选字段，不插入新行。复制 1 行可应用到多行；否则行数须相同。",TextWrapping=TextWrapping.Wrap});
         var grid=new System.Windows.Controls.Primitives.UniformGrid{Columns=3,Margin=new Thickness(0,10,0,10)};panel.Children.Add(grid);
         foreach(var (key,label) in new[]{("Text","字幕正文"),("Start","开始时间"),("End","结束时间"),("Style","样式"),("Actor","说话人"),("Layer","层"),("MarginL","左边距"),("MarginR","右边距"),("MarginV","垂直边距"),("Effect","特效字段"),("Comment","注释状态")}){var c=new CheckBox{Content=label,IsChecked=key=="Text"};choices.Add(key,c);grid.Children.Add(c);}
-        panel.Children.Add(new TextBlock{Text="正文包含 ASS 行内样式/位置标签。批注不会覆盖；同名共享样式沿用目标项目。",TextWrapping=TextWrapping.Wrap,Foreground=System.Windows.Media.Brushes.DimGray});
-        var message=new TextBlock{Foreground=System.Windows.Media.Brushes.Firebrick,TextWrapping=TextWrapping.Wrap};panel.Children.Add(message);
+        panel.Children.Add(new TextBlock{Text="正文包含 ASS 行内样式/位置标签。批注不会覆盖；同名共享样式沿用目标项目。",TextWrapping=TextWrapping.Wrap,Foreground=Frameflow.Core.Appearance.Brush("MutedBrush")});
+        var message=new TextBlock{Foreground=Frameflow.Core.Appearance.Brush("ErrorBrush"),TextWrapping=TextWrapping.Wrap};panel.Children.Add(message);
         var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,12,0,0)};panel.Children.Add(buttons);
         var cancel=new Button{Content="取消",IsCancel=true};var ok=new Button{Content="粘贴所选字段",IsDefault=true};ok.Click+=(_,_)=>{if(Fields.Count==0){message.Text="请至少勾选一个字段。";return;}if(copied!=1&&copied!=targets){message.Text="行数不匹配：请重新选择目标行，或只复制一行。";return;}DialogResult=true;};buttons.Children.Add(cancel);buttons.Children.Add(ok);
     }

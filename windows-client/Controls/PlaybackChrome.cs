@@ -15,7 +15,7 @@ public sealed class PlaybackTimeLabel:FrameworkElement
     public PlaybackTimeLabel(){Width=95;Height=24;IsHitTestVisible=false;AddVisualChild(label);}
     protected override int VisualChildrenCount=>1;
     protected override Visual GetVisualChild(int index)=>index==0?label:throw new ArgumentOutOfRangeException(nameof(index));
-    void Paint(){using var dc=label.RenderOpen();dc.DrawText(new FormattedText(text,CultureInfo.InvariantCulture,FlowDirection.LeftToRight,new Typeface("Consolas"),12,Brushes.Black,VisualTreeHelper.GetDpi(this).PixelsPerDip),new Point(0,4));}
+    void Paint(){using var dc=label.RenderOpen();dc.DrawText(new FormattedText(text,CultureInfo.InvariantCulture,FlowDirection.LeftToRight,new Typeface("Consolas"),12,Frameflow.Core.Appearance.Brush("ForegroundBrush"),VisualTreeHelper.GetDpi(this).PixelsPerDip),new Point(0,4));}
     protected override void OnRender(DrawingContext dc)=>Paint();
 }
 
@@ -36,9 +36,9 @@ public sealed class PlaybackSeekBar:FrameworkElement
     protected override void OnRender(DrawingContext dc)
     {
         dc.DrawRectangle(Brushes.Transparent,null,new Rect(RenderSize));
-        dc.DrawLine(new Pen(Brushes.LightGray,3),new Point(6,10),new Point(Math.Max(6,ActualWidth-6),10));
-        using(var drawing=thumb.RenderOpen())drawing.DrawRoundedRectangle(Brushes.White,new Pen(Brushes.SteelBlue,1),new Rect(-4,3,8,14),1,1);
-        if(IsKeyboardFocused)dc.DrawRectangle(null,new Pen(Brushes.SteelBlue,1),new Rect(0,0,ActualWidth,ActualHeight));MoveThumb();
+        dc.DrawLine(new Pen(Frameflow.Core.Appearance.Brush("BorderBrush"),3),new Point(6,10),new Point(Math.Max(6,ActualWidth-6),10));
+        using(var drawing=thumb.RenderOpen())drawing.DrawRoundedRectangle(Frameflow.Core.Appearance.Brush("Accent"),null,new Rect(-4,3,8,14),4,4);
+        if(IsKeyboardFocused)dc.DrawRectangle(null,new Pen(Frameflow.Core.Appearance.Brush("Accent"),1),new Rect(0,0,ActualWidth,ActualHeight));MoveThumb();
     }
     void FromPointer(MouseEventArgs e)=>Value=Minimum+Math.Clamp((e.GetPosition(this).X-6)/Math.Max(1,ActualWidth-12),0,1)*(Maximum-Minimum);
     protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e){Focus();dragging=true;CaptureMouse();FromPointer(e);e.Handled=true;}

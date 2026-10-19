@@ -41,7 +41,7 @@ internal sealed class DrawingDialog:SubtitleToolDialog
     internal void AddPoint(Point point){Points.Add(new(Math.Clamp(point.X,0,width),Math.Clamp(point.Y,0,height)));Redraw();}
     void Redraw()
     {
-        Surface.Children.Clear();var rect=Rect;var border=new Rectangle{Width=rect.Width,Height=rect.Height,Stroke=Brushes.SlateGray};Canvas.SetLeft(border,rect.X);Canvas.SetTop(border,rect.Y);Surface.Children.Add(border);
+        Surface.Children.Clear();var rect=Rect;var border=new Rectangle{Width=rect.Width,Height=rect.Height,Stroke=Frameflow.Core.Appearance.Brush("MutedBrush")};Canvas.SetLeft(border,rect.X);Canvas.SetTop(border,rect.Y);Surface.Children.Add(border);
         var polygon=new Polygon{Stroke=Brushes.DeepSkyBlue,Fill=new SolidColorBrush(Color.FromArgb(90,67,176,235)),StrokeThickness=2};foreach(var p in Points)polygon.Points.Add(new(rect.X+p.X/width*rect.Width,rect.Y+p.Y/height*rect.Height));Surface.Children.Add(polygon);
         foreach(var p in polygon.Points){var dot=new Ellipse{Width=6,Height=6,Fill=Brushes.White};Canvas.SetLeft(dot,p.X-3);Canvas.SetTop(dot,p.Y-3);Surface.Children.Add(dot);}
         Message.Text=$"{Points.Count} 个顶点";

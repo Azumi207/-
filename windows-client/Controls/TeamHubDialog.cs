@@ -25,7 +25,7 @@ internal sealed class TeamHubDialog:SubtitleToolDialog
     internal readonly TextBlock Details=new(){TextWrapping=TextWrapping.Wrap,Margin=new Thickness(4,6,4,6)};
     internal readonly Dictionary<string,Button> Buttons=new();
     readonly Expander admin;
-    readonly TextBlock session=new(){Margin=new Thickness(4),Foreground=Brushes.SlateGray};
+    readonly TextBlock session=new(){Margin=new Thickness(4),Foreground=Frameflow.Core.Appearance.Brush("MutedBrush")};
     readonly List<FrameworkElement> busyControls=new();
     CancellationTokenSource? cancellation;
     bool closeWhenDone;
@@ -79,11 +79,11 @@ internal sealed class TeamHubDialog:SubtitleToolDialog
     internal void Start(Func<Task> action){if(Busy)return;Operation=Run(action);}
     async Task Run(Func<Task> action)
     {
-        cancellation=new();Message.Text="";Message.Foreground=Brushes.SlateGray;UpdateControls();
+        cancellation=new();Message.Text="";Message.Foreground=Frameflow.Core.Appearance.Brush("MutedBrush");UpdateControls();
         try{await action();}
         catch(OperationCanceledException){Message.Text="操作已取消或超时。本地字幕保留；上传/下载可重试续传。若刚提交版本，请先刷新确认结果。";}
         catch(Exception ex) when(ex is IOException or HttpRequestException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or System.Text.Json.JsonException or FormatException)
-        {Message.Foreground=Brushes.DarkRed;Message.Text=ex.Message+"\n本地文件未删除；网络中断或冲突后请先刷新再重试。";}
+        {Message.Foreground=Frameflow.Core.Appearance.Brush("ErrorBrush");Message.Text=ex.Message+"\n本地文件未删除；网络中断或冲突后请先刷新再重试。";}
         finally{cancellation.Dispose();cancellation=null;UpdateControls();if(closeWhenDone)Close();}
     }
     internal async Task Refresh(string? selected=null)

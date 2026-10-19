@@ -65,6 +65,8 @@ public partial class MainWindow
     void UpdateVideoPresentation()
     {
         if(!ready||VideoViewport==null)return;double ratio=aspectOverride>0?aspectOverride:sourceVideoWidth/Math.Max(1,sourceVideoHeight);Overlay.VideoWidth=ratio;Overlay.VideoHeight=1;
+        // Fit mode must not feed the presence of a scrollbar back into its own size.
+        VideoViewport.HorizontalScrollBarVisibility=VideoViewport.VerticalScrollBarVisibility=videoZoom>0?ScrollBarVisibility.Auto:ScrollBarVisibility.Disabled;
         VideoSurface.Width=videoZoom>0?sourceVideoWidth*videoZoom:Math.Max(1,VideoViewport.ActualWidth-2);VideoSurface.Height=videoZoom>0?sourceVideoWidth/ratio*videoZoom:Math.Max(1,VideoViewport.ActualHeight-2);UpdateVideoRectangle();
     }
     void UpdateVideoRectangle(){if(!ready)return;var rect=Overlay.ContentRect;Player.Width=rect.Width;Player.Height=rect.Height;SafeGuides.Frame=rect;SafeGuides.InvalidateVisual();Overlay.InvalidateDocument();}

@@ -41,7 +41,7 @@ public partial class MainWindow
         async Task Click(TeamHubDialog h,string key)
         {
             check(h.Buttons[key].IsEnabled,"team native button enabled: "+key);h.Buttons[key].RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));await h.Operation;
-            check(h.Message.Foreground!=Brushes.DarkRed,"team native command completed: "+key+" "+h.Message.Text);
+            check(h.Message.Foreground!=Frameflow.Core.Appearance.Brush("ErrorBrush"),"team native command completed: "+key+" "+h.Message.Text);
         }
         async Task Login(TeamHubDialog h,string name)
         {h.Address.Text=urlBase;h.Username.Text=name;h.Password.Password=password;await Click(h,"login");check(h.Password.Password.Length==0,"team clears password UI after login");}
