@@ -15,14 +15,15 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - run: python scripts/check-repository.py
       - run: ./scripts/install-ffmpeg.ps1 -Destination ./tools/ffmpeg
+      - run: ./scripts/install-native-ass.ps1
       - run: dotnet build windows-client/Frameflow.csproj -c Release
-      - run: dotnet windows-client/bin/Release/net9.0-windows/Frameflow.dll --self-test "$env:RUNNER_TEMP/frameflow-core"
+      - run: dotnet windows-client/bin/Release/net10.0-windows/Frameflow.dll --self-test "$env:RUNNER_TEMP/frameflow-core"
       - name: Publish self-contained x64 (no bundled FFmpeg)
         run: ./scripts/build-client.ps1 -WithoutMedia -Output "$env:RUNNER_TEMP/frameflow-portable"
       - run: python scripts/package-client.py --publish "$env:RUNNER_TEMP/frameflow-portable"

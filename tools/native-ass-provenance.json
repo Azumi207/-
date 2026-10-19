@@ -1,0 +1,552 @@
+{
+  "renderer": "libass 0.17.5",
+  "source": "MSYS2 official mingw64 packages",
+  "packages": [
+    {
+      "name": "mingw-w64-x86_64-brotli",
+      "version": "1.2.0-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-brotli-1.2.0-1-any.pkg.tar.zst",
+      "sha256": "f5f2f7e723a08378241d15f0537386950c1a48e2d82bc47bedd632bd61852aba",
+      "license": [
+        "spdx:MIT"
+      ],
+      "homepage": [
+        "https://github.com/google/brotli"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-brotli-1.2.0-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libbrotlicommon.dll",
+          "destination": "libbrotlicommon.dll"
+        },
+        {
+          "member": "mingw64/bin/libbrotlidec.dll",
+          "destination": "libbrotlidec.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/brotli/LICENSE",
+          "destination": "Licenses/mingw-w64-x86_64-brotli/brotli/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-bzip2",
+      "version": "1.0.8-4",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-bzip2-1.0.8-4-any.pkg.tar.zst",
+      "sha256": "123768f30ae14ba654a6feb70f8526146a331bc85f831a91a549ffb3f6cbffc7",
+      "license": [
+        "custom"
+      ],
+      "homepage": [
+        "https://sourceware.org/bzip2/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-bzip2-1.0.8-4.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libbz2-1.dll",
+          "destination": "libbz2-1.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/bzip2/LICENSE",
+          "destination": "Licenses/mingw-w64-x86_64-bzip2/bzip2/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-expat",
+      "version": "2.9.0-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-expat-2.9.0-1-any.pkg.tar.zst",
+      "sha256": "d81be70f6e22b988f00564bb16a2769347a6321964c99042d8ed8a7ed72b4829",
+      "license": [
+        "spdx:MIT"
+      ],
+      "homepage": [
+        "https://libexpat.github.io/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-expat-2.9.0-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libexpat-1.dll",
+          "destination": "libexpat-1.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/expat/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-expat/expat/COPYING"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-fontconfig",
+      "version": "2.18.3-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-fontconfig-2.18.3-1-any.pkg.tar.zst",
+      "sha256": "7cdd32ad27ee9f8d176698744f3efa123feba57cecb833e87c221b50cd7224d1",
+      "license": [
+        "custom"
+      ],
+      "homepage": [
+        "https://wiki.freedesktop.org/www/Software/fontconfig/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-fontconfig-2.18.3-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libfontconfig-1.dll",
+          "destination": "libfontconfig-1.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/fontconfig/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-fontconfig/fontconfig/COPYING"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-freetype",
+      "version": "2.15.0-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-freetype-2.15.0-1-any.pkg.tar.zst",
+      "sha256": "426bd4e0e979118682be881ace475ef4d3ff1668084ac796350fb7e0504b82ef",
+      "license": [
+        "spdx:GPL-2.0-or-later OR FTL"
+      ],
+      "homepage": [
+        "https://www.freetype.org/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-freetype-2.15.0-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libfreetype-6.dll",
+          "destination": "libfreetype-6.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/freetype/FTL.TXT",
+          "destination": "Licenses/mingw-w64-x86_64-freetype/freetype/FTL.TXT"
+        },
+        {
+          "member": "mingw64/share/licenses/freetype/GPLv2.TXT",
+          "destination": "Licenses/mingw-w64-x86_64-freetype/freetype/GPLv2.TXT"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-fribidi",
+      "version": "1.0.17-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-fribidi-1.0.17-1-any.pkg.tar.zst",
+      "sha256": "707f6a2f9a49c83938271bfd92a11f80bd4c18c4837210173fcb39e9d841e5ac",
+      "license": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "homepage": [
+        "https://github.com/fribidi/fribidi"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-fribidi-1.0.17-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libfribidi-0.dll",
+          "destination": "libfribidi-0.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/fribidi/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-fribidi/fribidi/COPYING"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-gettext-runtime",
+      "version": "1.0-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-gettext-runtime-1.0-1-any.pkg.tar.zst",
+      "sha256": "be68d7f260633284b910c588c6d82ee304a81c8817a686d2cd9df83f872c27af",
+      "license": [
+        "spdx:GPL-3.0-or-later AND LGPL-2.1-or-later"
+      ],
+      "homepage": [
+        "https://www.gnu.org/software/gettext/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-gettext-1.0-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libintl-8.dll",
+          "destination": "libintl-8.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/gettext-runtime/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/COPYING"
+        },
+        {
+          "member": "mingw64/share/licenses/gettext-runtime/intl/COPYING.LIB",
+          "destination": "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/intl/COPYING.LIB"
+        },
+        {
+          "member": "mingw64/share/licenses/gettext-runtime/libasprintf/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/libasprintf/COPYING"
+        },
+        {
+          "member": "mingw64/share/licenses/gettext-runtime/libasprintf/COPYING.LIB",
+          "destination": "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/libasprintf/COPYING.LIB"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-glib2",
+      "version": "2.90.1-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-glib2-2.90.1-1-any.pkg.tar.zst",
+      "sha256": "152ba3b2cfb35feebc0fcb690889b16a6f0c2b89ced52e65aea45d089f86d219",
+      "license": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "homepage": [
+        "https://gitlab.gnome.org/GNOME/glib"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-glib2-2.90.1-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libglib-2.0-0.dll",
+          "destination": "libglib-2.0-0.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/glib2/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-glib2/glib2/COPYING"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-graphite2",
+      "version": "1.3.15-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-graphite2-1.3.15-1-any.pkg.tar.zst",
+      "sha256": "6ad20d6c16e559f7c4b06fe71248e1201c7edf494d04e5721ed7f9b3f7fd1f74",
+      "license": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "homepage": [
+        "https://github.com/silnrsi/graphite"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-graphite2-1.3.15-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libgraphite2.dll",
+          "destination": "libgraphite2.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/graphite2/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-graphite2/graphite2/COPYING"
+        },
+        {
+          "member": "mingw64/share/licenses/graphite2/LICENSE",
+          "destination": "Licenses/mingw-w64-x86_64-graphite2/graphite2/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-harfbuzz",
+      "version": "14.6.0-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-harfbuzz-14.6.0-1-any.pkg.tar.zst",
+      "sha256": "23a9b505159b3b9086ca918cc437c20e496d2f411aa25a050bd82b1070a079d1",
+      "license": [
+        "spdx:MIT"
+      ],
+      "homepage": [
+        "https://harfbuzz.github.io/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-harfbuzz-14.6.0-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libharfbuzz-0.dll",
+          "destination": "libharfbuzz-0.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/harfbuzz/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-harfbuzz/harfbuzz/COPYING"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-libass",
+      "version": "0.17.5-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libass-0.17.5-1-any.pkg.tar.zst",
+      "sha256": "11966a8df12b99454ac552c587f58c4ea81bb040bad1cfdd219bf2f50f567f8d",
+      "license": [
+        "spdx:ISC"
+      ],
+      "homepage": [
+        "https://github.com/libass/libass"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-libass-0.17.5-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libass-9.dll",
+          "destination": "libass-9.dll"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-libgcc",
+      "version": "16.2.0-6",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libgcc-16.2.0-6-any.pkg.tar.zst",
+      "sha256": "e0815432c4225892b0eef57055fe507fa0b9a036436f046605f6629696bd1b88",
+      "license": [
+        "spdx:GPL-3.0-or-later WITH GCC-exception-3.1 AND GFDL-1.3-or-later"
+      ],
+      "homepage": [
+        "https://gcc.gnu.org"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-gcc-16.2.0-6.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libgcc_s_seh-1.dll",
+          "destination": "libgcc_s_seh-1.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/libgcc/COPYING.RUNTIME",
+          "destination": "Licenses/mingw-w64-x86_64-libgcc/libgcc/COPYING.RUNTIME"
+        },
+        {
+          "member": "mingw64/share/licenses/libgcc/COPYING3",
+          "destination": "Licenses/mingw-w64-x86_64-libgcc/libgcc/COPYING3"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-libiconv",
+      "version": "1.19-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libiconv-1.19-1-any.pkg.tar.zst",
+      "sha256": "21e334d0911f25de75d3e18e0697648bcecfa9658256d600cad0827d719c2f35",
+      "license": [
+        "spdx:LGPL-2.1-or-later",
+        "documentation:spdx:GPL-3.0-or-later"
+      ],
+      "homepage": [
+        "https://www.gnu.org/software/libiconv/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-libiconv-1.19-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libiconv-2.dll",
+          "destination": "libiconv-2.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/libiconv/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-libiconv/libiconv/COPYING"
+        },
+        {
+          "member": "mingw64/share/licenses/libiconv/COPYING.LIB",
+          "destination": "Licenses/mingw-w64-x86_64-libiconv/libiconv/COPYING.LIB"
+        },
+        {
+          "member": "mingw64/share/licenses/libiconv/README",
+          "destination": "Licenses/mingw-w64-x86_64-libiconv/libiconv/README"
+        },
+        {
+          "member": "mingw64/share/licenses/libiconv/libcharset/COPYING.LIB",
+          "destination": "Licenses/mingw-w64-x86_64-libiconv/libiconv/libcharset/COPYING.LIB"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-libpng",
+      "version": "1.6.59-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libpng-1.6.59-1-any.pkg.tar.zst",
+      "sha256": "e1830319ea6c601c1e4d146b8e78264bcbb6326f0935b82c14a9b282af2127e1",
+      "license": [
+        "custom"
+      ],
+      "homepage": [
+        "http://www.libpng.org/pub/png/libpng.html"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-libpng-1.6.59-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libpng16-16.dll",
+          "destination": "libpng16-16.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/libpng/LICENSE",
+          "destination": "Licenses/mingw-w64-x86_64-libpng/libpng/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-libstdc++",
+      "version": "16.2.0-6",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libstdc++-16.2.0-6-any.pkg.tar.zst",
+      "sha256": "924b47e8c3e20b6448e29d3333acc638a4f4783c1c45230e09673532f9c4f198",
+      "license": [
+        "spdx:GPL-3.0-or-later WITH GCC-exception-3.1 AND GFDL-1.3-or-later"
+      ],
+      "homepage": [
+        "https://gcc.gnu.org"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-gcc-16.2.0-6.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libstdc++-6.dll",
+          "destination": "libstdc++-6.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/libstdc++/COPYING.RUNTIME",
+          "destination": "Licenses/mingw-w64-x86_64-libstdc++/libstdc++/COPYING.RUNTIME"
+        },
+        {
+          "member": "mingw64/share/licenses/libstdc++/COPYING3",
+          "destination": "Licenses/mingw-w64-x86_64-libstdc++/libstdc++/COPYING3"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-libunibreak",
+      "version": "7.0-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libunibreak-7.0-1-any.pkg.tar.zst",
+      "sha256": "ec35669473cad90472a97cdf60f0dc4292383c7dab7bad348ec22c45134c1bce",
+      "license": [
+        "spdx:Zlib"
+      ],
+      "homepage": [
+        "https://github.com/adah1972/libunibreak/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-libunibreak-7.0-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libunibreak-7.dll",
+          "destination": "libunibreak-7.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/libunibreak/LICENCE",
+          "destination": "Licenses/mingw-w64-x86_64-libunibreak/libunibreak/LICENCE"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-libwinpthread",
+      "version": "14.0.0.r495.g63ebe6cdb-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libwinpthread-14.0.0.r495.g63ebe6cdb-1-any.pkg.tar.zst",
+      "sha256": "89cc97eb3c3a2d4f8a860e8b74eb396ce42e03dbb471dee9b2d6eaf23f72ef25",
+      "license": [
+        "spdx:MIT AND BSD-3-Clause"
+      ],
+      "homepage": [
+        "https://www.mingw-w64.org/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-winpthreads-14.0.0.r495.g63ebe6cdb-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libwinpthread-1.dll",
+          "destination": "libwinpthread-1.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/libwinpthread/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-libwinpthread/libwinpthread/COPYING"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-pcre2",
+      "version": "10.49-1",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-pcre2-10.49-1-any.pkg.tar.zst",
+      "sha256": "0abc5313085a0f9b4a77a1580d92b09761371cb3a1f31d01051a94a289fb9413",
+      "license": [
+        "spdx:BSD-3-Clause"
+      ],
+      "homepage": [
+        "https://pcre.org/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-pcre2-10.49-1.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/libpcre2-8-0.dll",
+          "destination": "libpcre2-8-0.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/pcre2/COPYING",
+          "destination": "Licenses/mingw-w64-x86_64-pcre2/pcre2/COPYING"
+        },
+        {
+          "member": "mingw64/share/licenses/pcre2/LICENCE.md",
+          "destination": "Licenses/mingw-w64-x86_64-pcre2/pcre2/LICENCE.md"
+        }
+      ]
+    },
+    {
+      "name": "mingw-w64-x86_64-zlib",
+      "version": "1.3.2-2",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.3.2-2-any.pkg.tar.zst",
+      "sha256": "9e75842a070ba648e986e12424e1c92c9d7d77200e85f6a34eeb600819f2e694",
+      "license": [
+        "spdx:Zlib"
+      ],
+      "homepage": [
+        "https://www.zlib.net/"
+      ],
+      "source": "https://mirror.msys2.org/mingw/sources/mingw-w64-zlib-1.3.2-2.src.tar.zst",
+      "files": [
+        {
+          "member": "mingw64/bin/zlib1.dll",
+          "destination": "zlib1.dll"
+        },
+        {
+          "member": "mingw64/share/licenses/zlib/LICENSE",
+          "destination": "Licenses/mingw-w64-x86_64-zlib/zlib/LICENSE"
+        }
+      ]
+    }
+  ],
+  "files": {
+    "libbrotlicommon.dll": "ca7bc06ead80259971badf2cd0bfc688db9154dad65f139f49a38b4be9976f97",
+    "libbrotlidec.dll": "a142dc6cfa77cb907028aa9426f486f3d8de37855e8db2ae2894147908121881",
+    "Licenses/mingw-w64-x86_64-brotli/brotli/LICENSE": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94",
+    "libbz2-1.dll": "a4fbb97c26662d2b8a80bf4597ed3effb69b12048b0cb1eef2c3f211e2e66673",
+    "Licenses/mingw-w64-x86_64-bzip2/bzip2/LICENSE": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3",
+    "libexpat-1.dll": "6ceb3dd8d285f9a1ab8b9682565591580864c1ca2dcc9470c75872caab8fd8b8",
+    "Licenses/mingw-w64-x86_64-expat/expat/COPYING": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+    "libfontconfig-1.dll": "bed1827dbb226483026b2b33127866ce173aa2423d89ae7da6f88d6328792ec9",
+    "Licenses/mingw-w64-x86_64-fontconfig/fontconfig/COPYING": "51a51aa9823704fd90bccc616cdd17ebabb5b2b3e9cbde886ca02c7002288067",
+    "libfreetype-6.dll": "9f62ad75bdc24573940f2e0b0db1848464ce02928926808885e3744fc5272add",
+    "Licenses/mingw-w64-x86_64-freetype/freetype/FTL.TXT": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+    "Licenses/mingw-w64-x86_64-freetype/freetype/GPLv2.TXT": "c4120c6752c910c299e3bd9cb3a46ff262c268303ca2069b61f92f10a5656c18",
+    "libfribidi-0.dll": "ae9e30c61e1c62886d36e23a91d2943970ae990f85155cbd222b9ba44de9c51b",
+    "Licenses/mingw-w64-x86_64-fribidi/fribidi/COPYING": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "libintl-8.dll": "0537c3dd2378218508ebe3cc416d72a99ee2d24ae1c5525e23458f32544ef861",
+    "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/COPYING": "7ef2cdfe58e0c0460657b6598b49af29d4e03c1e41cbaf0e1da1eb8ad74b95d0",
+    "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/intl/COPYING.LIB": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/libasprintf/COPYING": "03133addae5b99a6148c538300e6d97074453089be1423b741bd081f18e2b298",
+    "Licenses/mingw-w64-x86_64-gettext-runtime/gettext-runtime/libasprintf/COPYING.LIB": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "libglib-2.0-0.dll": "84b15dc907fd1d3bb1cd799fc034d2edcbc3946c8c4acd6a8dd3ace381f9e568",
+    "Licenses/mingw-w64-x86_64-glib2/glib2/COPYING": "fa6f36630bb1e0c571d34b2bbdf188d08495c9dbf58f28cac112f303fc1f58fb",
+    "libgraphite2.dll": "063a9ad34a5ec87d038b4646660957395224ecf2cf707917256b7d251a7c5f57",
+    "Licenses/mingw-w64-x86_64-graphite2/graphite2/COPYING": "2c272829ff23f182c8bf7ea12fedea69b0ae148663123ed5240c117cb129c9c1",
+    "Licenses/mingw-w64-x86_64-graphite2/graphite2/LICENSE": "cab46cd45adbfea4b1d0f14b033c70062c73074fa0b56532c2f351576ddf455e",
+    "libharfbuzz-0.dll": "cfbe14d84474dae2b379a746a5325dcc10b7ebfa077bf5a8e9ec0d761f673b22",
+    "Licenses/mingw-w64-x86_64-harfbuzz/harfbuzz/COPYING": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+    "libass-9.dll": "d7e21a7fa952033ff5bbacd2564b343671bf0ad4ae9338613935f2709861b9d2",
+    "libgcc_s_seh-1.dll": "661f70dc19fde8c25bb56387b807b7a9ab7e532cf58fa8aeee078256c19d8980",
+    "Licenses/mingw-w64-x86_64-libgcc/libgcc/COPYING.RUNTIME": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+    "Licenses/mingw-w64-x86_64-libgcc/libgcc/COPYING3": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "libiconv-2.dll": "7a282a854e01be726c6cccfe46f548c716aa45b3014818468253aaa4efbcd067",
+    "Licenses/mingw-w64-x86_64-libiconv/libiconv/COPYING": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "Licenses/mingw-w64-x86_64-libiconv/libiconv/COPYING.LIB": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "Licenses/mingw-w64-x86_64-libiconv/libiconv/README": "4ae66e61d1c6593c84c47105b368d579bcee1af566dbb959ec63a0c48425dcf4",
+    "Licenses/mingw-w64-x86_64-libiconv/libiconv/libcharset/COPYING.LIB": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "libpng16-16.dll": "fdac85bb70ec3af940810036eb9838765dceb61aaf81a60b244209f99c617f3d",
+    "Licenses/mingw-w64-x86_64-libpng/libpng/LICENSE": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+    "libstdc++-6.dll": "b720a96289bcd6d9ec6f5f1f5612f1b1a523ce15d3ada20fe119791274cb512f",
+    "Licenses/mingw-w64-x86_64-libstdc++/libstdc++/COPYING.RUNTIME": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+    "Licenses/mingw-w64-x86_64-libstdc++/libstdc++/COPYING3": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "libunibreak-7.dll": "e146c2f36b2e36f620238f2bf0820ef9e74f5b39fbfb9ffe99183bb4a21809f0",
+    "Licenses/mingw-w64-x86_64-libunibreak/libunibreak/LICENCE": "0c57e2ec42ece17791a75d2f9b2f8e0663181be008667a507f765b3ef22522db",
+    "libwinpthread-1.dll": "05f9bfaee85ab38e3073bac78a7cbec8cf7f503288fa8f8071c9c02f45ccd27a",
+    "Licenses/mingw-w64-x86_64-libwinpthread/libwinpthread/COPYING": "63263614cdd29f2f93cba85e992f041b31f9fc7b4033692f31269489a8a1b177",
+    "libpcre2-8-0.dll": "68a7cee2acc36d6a61d73f78825d17dfd32f8580f4bb1bc399134719518213d5",
+    "Licenses/mingw-w64-x86_64-pcre2/pcre2/COPYING": "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+    "Licenses/mingw-w64-x86_64-pcre2/pcre2/LICENCE.md": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+    "zlib1.dll": "93e9243a44c29200eeacaf9658efe2558581770e4b11ca4b500e18e424a6e3b5",
+    "Licenses/mingw-w64-x86_64-zlib/zlib/LICENSE": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2"
+  },
+  "system_dependencies": [
+    "advapi32.dll",
+    "dwrite.dll",
+    "gdi32.dll",
+    "kernel32.dll",
+    "msvcrt.dll",
+    "ole32.dll",
+    "rpcrt4.dll",
+    "shell32.dll",
+    "user32.dll",
+    "usp10.dll",
+    "ws2_32.dll"
+  ]
+}

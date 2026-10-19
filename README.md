@@ -76,9 +76,13 @@ release-assets/     本地发行包，Git 忽略，应单独放 Releases
 本项目是早期版本，正式使用前应先备份并用副本验证。当前 Windows 环境可做客户端构建/核心测试、服务端真实本机 HTTP 测试和发行包验证。
 Linux/Docker/ARM64/systemd 的实际运行结果须以 GitHub Actions 或目标主机执行为准，不能将配置文件当成已经实测成功。
 客户端预览和 libass 最终压制不保证逐像素相同；跨电脑使用相同字体，先预览再正式输出。
-客户端目前使用 .NET 9；计划另行迁移到受维护的 LTS 版本，不在此次目录整理中冒进修改运行时。
+客户端目前使用 .NET 10；计划另行迁移到受维护的 LTS 版本，不在此次目录整理中冒进修改运行时。
 
 ## 开源与安全
 
 原创代码使用 [MIT](LICENSE)。第三方组件各有许可证，尤其 FFmpeg 不是 MIT；见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 [安全说明](SECURITY.md) · [贡献指南](CONTRIBUTING.md) · [更新记录](CHANGELOG.md)。
+
+### 本地开发版：拖动低延迟 + .NET 10 LTS
+
+拖动时使用常驻 libass 和字体缓存，松手后保留画面直到原尺寸 FFmpeg 精确帧就绪。Windows x64 便携版内置 .NET 10.0.13，不需要使用者安装运行时。构建前执行 `scripts/install-native-ass.ps1`；新组件与压制引擎的版本、字体及抗锯齿仍应通过对照预览验证，不能保证任意机器/复杂脚本零延迟。

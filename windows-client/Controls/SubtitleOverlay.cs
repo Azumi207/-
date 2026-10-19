@@ -74,4 +74,5 @@ public sealed class SubtitleOverlay:FrameworkElement
     {if(!Editing||Selected==null||!hit.Contains(e.GetPosition(this)))return;if(BeginMove?.Invoke()==false){e.Handled=true;return;}var p=Position(Selected);initialX=p.X;initialY=p.Y;origin=e.GetPosition(this);dragging=true;CaptureMouse();Cursor=Cursors.SizeAll;e.Handled=true;}
     protected override void OnMouseMove(MouseEventArgs e){if(!dragging||Document==null)return;var p=e.GetPosition(this);Moved?.Invoke(Math.Clamp(initialX+(p.X-origin.X)/ContentRect.Width*Document.PlayResX,0,Document.PlayResX),Math.Clamp(initialY+(p.Y-origin.Y)/ContentRect.Height*Document.PlayResY,0,Document.PlayResY));}
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e){if(!dragging)return;dragging=false;ReleaseMouseCapture();Cursor=Cursors.Arrow;EndMove?.Invoke();}
+    protected override void OnLostMouseCapture(MouseEventArgs e){base.OnLostMouseCapture(e);if(!dragging)return;dragging=false;Cursor=Cursors.Arrow;EndMove?.Invoke();}
 }

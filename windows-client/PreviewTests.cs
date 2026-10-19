@@ -63,6 +63,44 @@ Comment: 0,0:00:00.00,0:00:12.00,Default,,0,0,0,,THIS COMMENT MUST NOT BE VISIBL
             File.WriteAllText(Path.Combine(dir,"font-diagnostics.txt"),work.Diagnostics);
         }
         var fontDir=Path.Combine(dir,"fonts [字体]");Directory.CreateDirectory(fontDir);string originalFont=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts),"arial.ttf");string custom=Path.Combine(fontDir,"custom.ttf");File.Copy(originalFont,custom,true);string fontHash=Hash(File.ReadAllBytes(custom),(int)new FileInfo(custom).Length);
+        using(var native=new NativeAssRenderer(fontDir))
+        using(var reference=new AssPreviewWorkspace(Script,fontDir,CancellationToken.None))
+        {
+            var samples=new List<object>();
+            foreach(double time in new[]{.5,2.5,4.2,5.5,6.1,7.8,8.5,10.8})
+            {
+                using var exact=await Frame(reference,time);using var live=native.Render(Script,640,360,time,CancellationToken.None);
+                Save(exact,Path.Combine(dir,"ref-"+time+".png"));Save(live,Path.Combine(dir,"live-"+time+".png"));
+                int foreground=0;double error=0;
+                for(int i=0;i<640*360*4;i+=4)if(exact.Pixels[i+3]>0||live.Pixels[i+3]>0){foreground++;for(int c=0;c<4;c++)error+=Math.Abs(exact.Pixels[i+c]-live.Pixels[i+c]);}
+                double mae=error/Math.Max(1,foreground*4);samples.Add(new{time,foreground,rgba_mae=mae});
+                check(foreground>100&&mae<2,"native cached libass agrees with FFmpeg foreground at ASS time "+time+"; RGBA MAE="+mae.ToString("0.###"));
+                check(Pixels(live,(b,g,r,a)=>Math.Max(b,Math.Max(g,r))>a)==0,"native blend remains premultiplied at "+time);
+            }
+            int processes=AssPreviewWorkspace.ProcessLaunches;var times=new List<double>();
+            for(int i=0;i<60;i++)
+            {
+                var watch=Stopwatch.StartNew();using var frame=native.Render(Script.Replace(@"\pos(40,70)",@"\pos("+(40+i)+",70)"),3840,2160,6.5,CancellationToken.None);times.Add(watch.Elapsed.TotalMilliseconds);
+            }
+            check(AssPreviewWorkspace.ProcessLaunches==processes&&native.RenderCount==68,"60 native 4K-input updates reuse renderer and launch no FFmpeg processes");
+            check(native.Diagnostics.Contains("fontselect")&&native.Diagnostics.Contains("Frameflow Missing Font 7123"),"native diagnostics record actual font lookup and fallback");
+            foreach(string matrix in new[]{"None","TV.709","PC.709","PC.601"})
+            {
+                string script=Script.Replace("ScriptType: v4.00+","ScriptType: v4.00+\nYCbCr Matrix: "+matrix);
+                using var compare=new AssPreviewWorkspace(script,fontDir,CancellationToken.None);using var exact=await Frame(compare,.5);using var live=native.Render(script,640,360,.5,CancellationToken.None);
+                int i=(30*640+30)*4;
+                check(Enumerable.Range(0,4).All(c=>Math.Abs(exact.Pixels[i+c]-live.Pixels[i+c])<=1),"native RGB range agrees with pinned FFmpeg for "+matrix);
+            }
+            File.WriteAllText(Path.Combine(dir,"native-comparison.json"),System.Text.Json.JsonSerializer.Serialize(new{samples,render_ms=times,median_ms=times.Order().ElementAt(30),p95_ms=times.Order().ElementAt(56),diagnostics=native.Diagnostics},new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        }
+        using(var native=new NativeAssRenderer(""))
+        {
+            using var cancel=new CancellationTokenSource();cancel.Cancel();bool canceled=false;
+            try{using var ignored=native.Render(Script,640,360,1,cancel.Token);}catch(OperationCanceledException){canceled=true;}
+            check(canceled,"native render honors cancellation before touching track state");native.Dispose();bool disposed=false;
+            try{using var ignored=native.Render(Script,640,360,1,CancellationToken.None);}catch(ObjectDisposedException){disposed=true;}
+            check(disposed,"native handles dispose idempotently and reject use after free");
+        }
         string owned;using(var work=new AssPreviewWorkspace(Script,fontDir,CancellationToken.None)){owned=work.DirectoryPath;using var frame=await Frame(work,6.5);check(work.Diagnostics.Contains("FONT: "+custom)&&work.Diagnostics.Contains("fontselect"),"custom font folder is staged read-only and used by preview");}
         check(!Directory.Exists(owned)&&Hash(File.ReadAllBytes(custom),(int)new FileInfo(custom).Length)==fontHash,"preview workspace is removed, original font is unchanged");
         using(var work=new AssPreviewWorkspace(Script,"",CancellationToken.None))

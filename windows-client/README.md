@@ -1,6 +1,6 @@
 # Windows 客户端 · 免 .NET 便携版
 
-用于打轴、翻译、校对、ASS 样式调整和硬字幕压制。客户端功能版本 0.2.0，便携包内置 .NET 9.0.21，适用于 Windows 10/11 x64。
+用于打轴、翻译、校对、ASS 样式调整和硬字幕压制。客户端功能版本 0.2.0，便携包内置 .NET 10.0.13，适用于 Windows 10/11 x64。
 
 ## 普通用户：三步启动
 
@@ -24,7 +24,7 @@ FFmpeg 是独立 GPL 组件，未附带在公开 ZIP 内；首次从上游下载
 
 ## 源码构建
 
-开发机器需要 .NET 9 SDK：`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-client.ps1 -WithoutMedia`。默认自包含 win-x64，不裁剪 WPF/MoonSharp，不要求用户安装运行时。已有输出目录拒绝覆盖。
+开发机器需要 .NET 10 SDK：`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-client.ps1 -WithoutMedia`。默认自包含 win-x64，不裁剪 WPF/MoonSharp，不要求用户安装运行时。已有输出目录拒绝覆盖。
 使用 `python scripts/package-client.py --publish 编译输出目录` 生成便携 ZIP；该脚本拒绝包含 Engine、数据或缺失运行时许可证的构建。开发说明包含隔离运行时验证命令。
 
 [完整使用说明](../docs/使用说明.md) · [便携版快速开始](../docs/便携版快速开始.txt)

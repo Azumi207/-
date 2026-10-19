@@ -1,3 +1,3 @@
-WinForms runtime notices: https://raw.githubusercontent.com/dotnet/winforms/v9.0.21/THIRD-PARTY-NOTICES.TXT
+WinForms runtime notices: https://raw.githubusercontent.com/dotnet/winforms/v10.0.13/THIRD-PARTY-NOTICES.TXT
 SHA256: 5a412b38efae0b162dc0893b319023f4cd14a8985a0f9f9ae01ac052b37a36eb
-Additional runtime licenses/notices are copied without modification from Microsoft.NETCore.App.Runtime.win-x64 / Microsoft.WindowsDesktop.App.Runtime.win-x64 NuGet 9.0.21 at publish time.
+Additional runtime licenses/notices are copied without modification from Microsoft.NETCore.App.Runtime.win-x64 / Microsoft.WindowsDesktop.App.Runtime.win-x64 NuGet 10.0.13 at publish time.

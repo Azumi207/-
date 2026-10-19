@@ -48,6 +48,7 @@ internal sealed class AssFrameBuffer
 }
 internal sealed class AssPreviewWorkspace:IDisposable
 {
+    internal static int ProcessLaunches;
     internal readonly string DirectoryPath;
     internal string SnapshotPath=>Path.Combine(DirectoryPath,"snapshot.ass");
     readonly ConcurrentQueue<string> diagnostics=new();int diagnosticChars;
@@ -70,7 +71,7 @@ internal sealed class AssPreviewWorkspace:IDisposable
         if(!continuous)args.AddRange(["-frames:v","1"]);args.AddRange(["-f","rawvideo","pipe:1"]);
         var info=new ProcessStartInfo(BurnInEncoder.Tool("ffmpeg")){WorkingDirectory=DirectoryPath,UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden,RedirectStandardOutput=true,RedirectStandardError=true,StandardErrorEncoding=Encoding.UTF8};foreach(string a in args)info.ArgumentList.Add(a);
         Log("COMMAND: "+System.Text.Json.JsonSerializer.Serialize(new{info.FileName,args,info.WorkingDirectory}));token.ThrowIfCancellationRequested();
-        using var process=Process.Start(info)??throw new IOException("无法启动 libass 预览进程。");LastProcessId=process.Id;Log("command_execution PID="+process.Id);
+        using var process=Process.Start(info)??throw new IOException("无法启动 libass 预览进程。");Interlocked.Increment(ref ProcessLaunches);LastProcessId=process.Id;Log("command_execution PID="+process.Id);
         using var job=new EncoderJob(process);try{process.PriorityClass=ProcessPriorityClass.BelowNormal;}catch(System.ComponentModel.Win32Exception){}
         using var cancelRegistration=token.Register(()=>{try{if(!process.HasExited)process.Kill(true);}catch(InvalidOperationException){}catch(System.ComponentModel.Win32Exception){}});
         async Task Errors(){while(await process.StandardError.ReadLineAsync() is string line)Log(line);}

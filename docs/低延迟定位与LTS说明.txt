@@ -1,0 +1,20 @@
+帧语 · 低延迟定位与 .NET 10 LTS（本地验证版）
+
+本次改变
+- 内置 .NET 10.0.13 LTS，使用者仍不需要自己安装 .NET。
+- MainWindow.ScheduleAssPreview 的 assDragging 分支采用最新位置合并队列；任务结束立即提交下一帧，不再等待反复启动外部进程。
+- NativeAssRenderer 常驻 libass、DirectWrite 字体与字形缓存；多行字幕、固定 clip/iclip、动画和卡拉 OK 仍由 libass 解析。
+- 拖动固定编辑时刻，实时帧按最高 1280×720 显示尺寸绘制；松手不清屏，等原尺寸 FFmpeg/libass 参考帧就绪后替换。两个构建的细微抗锯齿/字体差异可能存在，成片对照仍是最终校验。
+- 原版、旧便携包、快捷键、菜单、压制以及服务器接口保留。此版本还未上传 GitHub。
+
+测试方式
+用同一组 drag.ass 和 SmoothProbe，比较 .NET 9 原版、仅升级 .NET 10 的对照、优化版及真实回滚重建版。包括单行、多行、遮罩、4K 输入全屏，检查实际 WPF 像素、其他字幕不动、松手不空白、一次撤销/重做、丢失鼠标捕获，以及新渲染路径的外部进程计数。
+计时是本机测试夹具的输入到新字幕帧更新延迟，不是所有电脑的保证，也不是摄像机测得的物理屏幕延迟。正式数值和原始输出见本工作区 verification/smooth-preview 与四角色 VERIFICATION.txt。
+完整 ASS 检查包含与当前 FFmpeg 的逐像素对比、动画、卡拉 OK、正反遮罩、字体替换、TV/PC/None 颜色范围、原尺寸压制对照。
+
+开发者
+Windows x64 / .NET 10 SDK，先运行 scripts/install-native-ass.ps1 和 scripts/install-ffmpeg.ps1。NativeAss DLL 清单及完整哈希在 tools/native-ass-provenance.json，许可与对应源码链接随包保留。不要用不匹配 ABI 的 libass 替换 DLL。
+可通过 tests/smooth/SmoothProbe.csproj 重跑定位探针。CI 配置已迁移，但本轮未上传，不能将本地通过当作 GitHub CI 已运行。
+
+恢复旧版
+保存自己的字幕并关闭程序，再打开旧版本目录，或将旧 ZIP 解压到另一个空目录。不要将 .NET 9 与 .NET 10 的运行时混合覆盖。源码回退使用 ROLLBACK.sh --pre-smooth TARGET_SOURCE_ZIP_COPY，保留脚本旁 smooth-preview/PRE_SMOOTH_BASELINE.zip；历史 --pre-drag、--pre-preview、--pre-ui 入口仍保留。

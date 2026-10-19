@@ -39,9 +39,9 @@ public partial class MainWindow:Window
         Wave.EndEdit+=()=>{MarkDirty();RefreshIssues();};
         Wave.SeekRequested+=t=>{if(Linked.IsChecked==true)Seek(t);else{Wave.Position=t;Wave.InvalidateVisual();}};
         Wave.ZoomChanged+=()=>{ZoomLabel.Text=$"{Wave.Span:0.0} s · 滚轮缩放";ScheduleSpectrum();};
-        Overlay.BeginMove+=()=>{if(selected==null||!ApplyEditor())return false;if(selected.Text.Contains(@"\move(")){Status.Text="此句含动态定位，拖动已禁用；请在正文中明确编辑 move 标签。";return false;}PushUndo();return true;};
-        Overlay.Moved+=(x,y)=>{if(selected==null)return;try{AssTags.Set(selected,"pos",$"({x.ToString("0",CultureInfo.InvariantCulture)},{y.ToString("0",CultureInfo.InvariantCulture)})");selected.Reviewed=false;XBox.Text=x.ToString("0",CultureInfo.InvariantCulture);YBox.Text=y.ToString("0",CultureInfo.InvariantCulture);Overlay.InvalidateDocument();}catch(Exception ex){Status.Text=ex.Message;}};
-        Overlay.EndMove+=()=>{MarkDirty();LoadEditor();RefreshRows();};
+        Overlay.BeginMove+=()=>{if(selected==null||!ApplyEditor())return false;if(selected.Text.Contains(@"\move(")){Status.Text="此句含动态定位，拖动已禁用；请在正文中明确编辑 move 标签。";return false;}PushUndo();BeginAssSubtitleDrag();return true;};
+        Overlay.Moved+=(x,y)=>{if(selected==null||assDragging&&selected!=assDragRow)return;try{AssTags.Set(selected,"pos",$"({x.ToString("0",CultureInfo.InvariantCulture)},{y.ToString("0",CultureInfo.InvariantCulture)})");selected.Reviewed=false;XBox.Text=x.ToString("0",CultureInfo.InvariantCulture);YBox.Text=y.ToString("0",CultureInfo.InvariantCulture);Overlay.InvalidateDocument();MoveAssSubtitlePreview();}catch(Exception ex){Status.Text=ex.Message;}};
+        Overlay.EndMove+=EndAssSubtitleDrag;
         InitializePlayback();timer.Tick+=(_,_)=>Tick();autosave.Tick+=(_,_)=>AutoSave();autosave.Start();
         document.Add(0,2,"");RefreshAll(0);UpdateShortcutHint();Loaded+=(_,_)=>{if(!SmokeMode)ApplyDisplayOptions(DisplayOptions.Load(DisplayOptionsPath));UpdateVideoPresentation();};
     }

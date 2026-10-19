@@ -9,11 +9,13 @@ def package(publish,output):
     config=json.loads((publish/'Frameflow.runtimeconfig.json').read_text())['runtimeOptions']
     assert not config.get('frameworks') and not config.get('framework')
     frameworks={x['name']:x['version'] for x in config['includedFrameworks']}
-    assert frameworks=={'Microsoft.NETCore.App':'9.0.21','Microsoft.WindowsDesktop.App':'9.0.21'}
-    required=['Frameflow.exe','Frameflow.dll','coreclr.dll','hostfxr.dll','hostpolicy.dll','PresentationFramework.dll','start-client.cmd','install-ffmpeg.ps1','ffmpeg-provenance.json','LICENSE','THIRD_PARTY.md','Licenses/MoonSharp-LICENSE.txt']
+    assert frameworks=={'Microsoft.NETCore.App':'10.0.13','Microsoft.WindowsDesktop.App':'10.0.13'}
+    required=['NativeAss/libass-9.dll','NativeAss/native-ass-provenance.json','NativeAss/libass-LICENSE.txt','Frameflow.exe','Frameflow.dll','coreclr.dll','hostfxr.dll','hostpolicy.dll','PresentationFramework.dll','start-client.cmd','install-ffmpeg.ps1','ffmpeg-provenance.json','LICENSE','THIRD_PARTY.md','Licenses/MoonSharp-LICENSE.txt']
     required += ['Licenses/microsoft.netcore.app.runtime.win-x64/'+n for n in ['LICENSE.TXT','THIRD-PARTY-NOTICES.TXT']]
     required += ['Licenses/microsoft.windowsdesktop.app.runtime.win-x64/LICENSE']
     for n in required:assert (publish/n).is_file(),n
+    native=json.loads((publish/'NativeAss/native-ass-provenance.json').read_text(encoding='utf-8'))
+    for n,h in native['files'].items():assert hashlib.sha256((publish/'NativeAss'/n).read_bytes()).hexdigest()==h,n
     files={}
     for p in sorted(publish.rglob('*')):
         assert not p.is_symlink()

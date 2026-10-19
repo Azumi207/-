@@ -4,11 +4,12 @@ $root=Split-Path $PSScriptRoot -Parent
 if (!$Output) { $Output=Join-Path $root 'release-assets\client-build' }
 $Output=[IO.Path]::GetFullPath($Output)
 if (Test-Path -LiteralPath $Output) { throw 'Output exists; choose a fresh directory. Existing deployments are not overwritten.' }
-if (!(Get-Command dotnet -ErrorAction SilentlyContinue)) { throw 'Install .NET 9 SDK from https://dotnet.microsoft.com/download/dotnet/9.0 first.' }
+if (!(Get-Command dotnet -ErrorAction SilentlyContinue)) { throw 'Install .NET 10 SDK from https://dotnet.microsoft.com/download/dotnet/10.0 first.' }
+& (Join-Path $PSScriptRoot 'install-native-ass.ps1')
 if (!$WithoutMedia) { & (Join-Path $PSScriptRoot 'install-ffmpeg.ps1') -Destination (Join-Path $root 'tools\ffmpeg') }
 $media=if($WithoutMedia) { 'false' } else { 'true' }
 # Pin the reviewed runtime patch; SDK/runtime installation is needed only by the builder.
-$runtimeVersion='9.0.21'
+$runtimeVersion='10.0.13'
 & dotnet publish (Join-Path $root 'windows-client\Frameflow.csproj') -c Release -r win-x64 --self-contained true -o $Output '-p:UseSharedCompilation=false' "-p:IncludeMediaEngine=$media" "-p:RuntimeFrameworkVersion=$runtimeVersion" '-p:PublishTrimmed=false' '-p:PublishSingleFile=false'
 if ($LASTEXITCODE -ne 0) { throw 'Client build failed.' }
 Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination $Output
