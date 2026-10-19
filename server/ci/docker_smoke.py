@@ -33,6 +33,8 @@ def main():
             run('exec','-T','app','python','/app/server.py','--data','/data','backup','/backups/smoke')
             run('exec','-T','app','test','-f','/backups/smoke/BACKUP_COMPLETE.txt')
             run('restart');run('up','-d','--wait','--wait-timeout','120')
+            # Docker may allocate a new host port on restart when published port is 0.
+            port=int(run('port','app','8765').rsplit(':',1)[1])
             assert api('/api/projects/'+created['id'],token=token)['title']=='Disposable Docker smoke'
             api('/api/logout',{},token)
             print('PASS: Compose build/init/health/nonroot/login/project/backup/restart persistence/logout')

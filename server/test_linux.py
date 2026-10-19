@@ -123,3 +123,25 @@ def test_actual_launcher_serve_only_restart_and_password_confirmation(tmp_path):
                 assert client.post('/api/logout').status_code==200;del client.headers['Authorization']
             finally:
                 process.terminate();process.wait(timeout=10)
+
+def test_docker_smoke_requeries_dynamic_port_after_restart(monkeypatch):
+    """Mock-only regression of host port refresh; real containers run in CI."""
+    import io
+    from types import SimpleNamespace
+    m=module('ci/docker_smoke.py');state={'restart':False,'ports':0,'requests':0}
+    def run(command,**kwargs):
+        text=''
+        if 'restart' in command:state['restart']=True
+        if 'port' in command:
+            state['ports']+=1;text='127.0.0.1:'+('22222' if state['restart'] else '11111')
+        if command[-2:]==['id','-u']:text='10001'
+        return SimpleNamespace(returncode=0,stdout=text,stderr='')
+    def open_request(request,**kwargs):
+        expected='22222' if state['restart'] else '11111'
+        assert request.full_url.startswith('http://127.0.0.1:'+expected+'/')
+        state['requests']+=1
+        reply={'api':1,'token':'fixture-token','id':'fixture-project','title':'Disposable Docker smoke'}
+        return io.BytesIO(json.dumps(reply).encode())
+    monkeypatch.setattr(m.subprocess,'run',run)
+    monkeypatch.setattr(m.urllib.request,'build_opener',lambda *args:SimpleNamespace(open=open_request))
+    m.main();assert state['ports']==2 and state['requests']==5
