@@ -1,0 +1,5 @@
+# Replace HOST with your domain, point its DNS at your server, and configure
+# the host Caddy service separately. This file is never auto-installed.
+HOST {
+    reverse_proxy 127.0.0.1:8765
+}

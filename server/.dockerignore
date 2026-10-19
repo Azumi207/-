@@ -1,0 +1,13 @@
+**
+!requirements.txt
+!server.py
+!launcher.py
+!healthcheck.py
+!docker-entrypoint.sh
+!web/
+!web/index.html
+!web/app.js
+!web/app.css
+!web/hash-worker.js
+!web/sha256.js
+!web/mark.svg

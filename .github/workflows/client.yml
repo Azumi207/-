@@ -1,0 +1,26 @@
+name: Windows client and repository
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  client:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python scripts/check-repository.py
+      - run: ./scripts/install-ffmpeg.ps1 -Destination ./tools/ffmpeg
+      - run: dotnet build windows-client/Frameflow.csproj -c Release
+      - run: dotnet windows-client/bin/Release/net9.0-windows/Frameflow.dll --self-test "$env:RUNNER_TEMP/frameflow-core"
+      - run: python scripts/package-source.py

@@ -1,0 +1,27 @@
+name: frameflow
+services:
+  app:
+    build: .
+    image: frameflow-team:local
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRAMEFLOW_PORT:-8765}:8765"
+    environment:
+      FRAMEFLOW_TEAM_DATA: /data
+      FRAMEFLOW_MAX_VIDEO_GB: ${FRAMEFLOW_MAX_VIDEO_GB:-20}
+      FRAMEFLOW_QUOTA_GB: ${FRAMEFLOW_QUOTA_GB:-100}
+    volumes:
+      - frameflow-data:/data
+      - frameflow-backups:/backups
+    read_only: true
+    tmpfs:
+      - /tmp:size=67108864,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+volumes:
+  frameflow-data:
+  frameflow-backups:

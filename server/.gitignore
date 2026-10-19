@@ -1,0 +1,16 @@
+data/
+.venv/
+.build-venv/
+generated/
+__pycache__/
+.pytest_cache/
+*.sqlite3*
+backups/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.coverage
+htmlcov/
+.DS_Store

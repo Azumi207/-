@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks><AssemblyName>Frameflow</AssemblyName>
+    <Version>0.2.0</Version><ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MoonSharp" Version="2.0.0" />
+  </ItemGroup>
+  <ItemGroup><Content Include="Licenses\*.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup Condition="Exists('..\tools\ffmpeg\ffmpeg.exe')"><Content Include="..\tools\ffmpeg\**\*" Link="Engine\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+</Project>
