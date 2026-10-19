@@ -1,23 +1,30 @@
-# Windows 客户端
+# Windows 客户端 · 免 .NET 便携版
 
-用于打轴、翻译、校对、ASS 样式调整以及硬字幕压制。当前客户端版本 0.2.0。
+用于打轴、翻译、校对、ASS 样式调整和硬字幕压制。客户端功能版本 0.2.0，便携包内置 .NET 9.0.21，适用于 Windows 10/11 x64。
 
-## 使用发行包
+## 普通用户：三步启动
 
-1. 从仓库 Releases 下载 `Frameflow-Client-Windows-0.2.0.zip`，完整解压到可写目录，不要只取 EXE。
-2. 安装微软官方 [.NET 9 Desktop Runtime x64](https://dotnet.microsoft.com/download/dotnet/9.0)（不是只装 ASP.NET Runtime）。
-3. 双击 `start-client.cmd`。首次下载独立 FFmpeg 9.0.2，核对整个 ZIP 及 ffmpeg/ffprobe/许可证文件的 SHA256；不匹配立即停止，不绕过检查。
-4. 使用“文件”打开视频与字幕；通过“团队”登录工作台，下载的工作副本仍在本地编辑。
+1. 从 [Releases](https://github.com/Azumi207/-/releases) 下载 **Frameflow-Client-Windows-0.2.0-Portable-win-x64.zip**。
+2. 右键 ZIP → **全部解压**，选择桌面或其他可写目录。不要直接在压缩包里运行。
+3. 打开 Frameflow 文件夹，双击 **启动帧语.cmd**（start-client.cmd 为同一入口）。
 
-媒体下载需要网络，上游地址或版本变化后固定校验可能拒绝安装，请联系维护者更新审核过的版本，不要删除校验。
-可离线传入相同原始下载包：`powershell -NoProfile -ExecutionPolicy Bypass -File install-ffmpeg.ps1 -ArchivePath 完整ZIP路径 -Destination Engine`。
-FFmpeg 是独立 GPL 软件，仅作为子进程使用，不因此把其许可证改为 MIT。公开包不包含其二进制，避免把未经完整合规核查的第三方集合直接再发布。
-下载暂存目录保留以便排查，程序不会递归删除其他文件。正常使用完成后可自行清理 `.ffmpeg-download-*` 暂存副本，但保留 Engine。
+**不需要自己安装 .NET、Python 或开发工具，也不需要管理员权限。** 首次会自动联网下载独立媒体组件并验证 SHA256；成功后本地字幕编辑可离线使用。准备完成后也可直接打开 Frameflow.exe。
 
-## 从源码构建
+请保留整个文件夹，不要只复制 EXE。包内「便携版快速开始.txt」提供故障排查。软件尚未数字签名；仅从本仓库下载、核对 SHA256，不建议关闭 Windows 防护。
 
-需要 .NET 9 SDK，在仓库根运行 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-client.ps1`。
-默认输出新的 `release-assets/client-build`，已存在时拒绝覆盖。`-WithoutMedia` 可仅编译程序，不下载媒体组件。
-编译器输出不包含 .NET 运行时；使用者需 Desktop Runtime。请按微软支持周期维护运行时，后续应单独规划 .NET LTS 迁移。
+## 媒体组件与网络
 
-完整操作见 [使用说明](../docs/使用说明.md)。字体不随项目自动安装；复杂字幕请先压制短预览。
+FFmpeg 是独立 GPL 组件，未附带在公开 ZIP 内；首次从上游下载固定版本并严格校验。下载失败可重试，校验失败请等待维护者审核更新，不能跳过校验。
+有原始下载包时，可使用 `powershell -NoProfile -ExecutionPolicy Bypass -File install-ffmpeg.ps1 -ArchivePath 完整ZIP路径 -Destination Engine`。
+暂存的 .ffmpeg-download-* 保留供排查，可自行清理；保留 Engine。内置 .NET 的两份许可及第三方通知在 Licenses 下。
+
+## 更新与卸载
+
+新版本解压到新文件夹，不覆盖旧版，先备份字幕再打开验证。内置运行时不会依赖系统安装或自动更新，需要下载新版便携包。关闭程序后删除程序目录即可卸载；不要删掉自己的字幕和视频。
+
+## 源码构建
+
+开发机器需要 .NET 9 SDK：`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-client.ps1 -WithoutMedia`。默认自包含 win-x64，不裁剪 WPF/MoonSharp，不要求用户安装运行时。已有输出目录拒绝覆盖。
+使用 `python scripts/package-client.py --publish 编译输出目录` 生成便携 ZIP；该脚本拒绝包含 Engine、数据或缺失运行时许可证的构建。开发说明包含隔离运行时验证命令。
+
+[完整使用说明](../docs/使用说明.md) · [便携版快速开始](../docs/便携版快速开始.txt)

@@ -8,7 +8,7 @@
 
 | 你想做什么 | 去哪里 |
 |---|---|
-| 下载可运行的安装包 | [Releases](https://github.com/Azumi207/-/releases)（发布前可能为空） |
+| 下载可运行的安装包 | [Releases](https://github.com/Azumi207/-/releases) |
 | Windows 打轴、翻译、校对、压制 | [Windows 客户端](windows-client/README.md) |
 | Linux 部署字幕组工作台 | [Linux 服务端](linux-server/README.md) |
 | Windows 部署字幕组工作台 | [Windows 服务端](windows-server/README.md) |
@@ -34,7 +34,7 @@
 
 ### 普通 Windows 用户
 
-下载 Windows 客户端 ZIP，解压后双击 `start-client.cmd`。需要 **.NET 9 Desktop Runtime x64**。
+下载名称带 **Portable-win-x64** 的客户端 ZIP，右键“全部解压”，打开文件夹双击 **启动帧语.cmd**。已内置 .NET Desktop Runtime，**不需要安装 .NET，不需要管理员权限**。不要直接在压缩包里运行或只复制 EXE。
 公开客户端包不捆绑 FFmpeg；首次启动会从上游下载经过固定 SHA256 校验的独立媒体组件，后续无需重复下载。详见客户端说明。
 Windows 服务端 ZIP 则双击 `启动工作台.cmd`，无需自行安装 Python。
 
