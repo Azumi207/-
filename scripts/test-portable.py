@@ -4,7 +4,7 @@ Does not uninstall/rename any installed runtime or modify machine configuration.
 For release validation use a disposable extracted package with Engine installed.
 """
 from pathlib import Path
-import argparse,json,os,subprocess,sys
+import argparse,json,os,re,subprocess,sys
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--app',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--expect-framework-dependent',action='store_true');a=p.parse_args()
@@ -25,11 +25,19 @@ def main():
     else:
         assert not config.get('frameworks') and not config.get('framework') and config.get('includedFrameworks')
         assert run.returncode==0,result['stderr']
-        assert 'TOTAL: 288 passed' in (tests/'core-tests.txt').read_text(encoding='utf-8-sig')
+        report=(tests/'core-tests.txt').read_text(encoding='utf-8-sig')
+        attempts=json.loads((tests/'gpu-results.json').read_text(encoding='utf-8'))['detection']['Attempts']
+        # 286 always-run checks, plus one real render for each actually available GPU backend.
+        # Hosted Windows runners often have no hardware encoder; never fabricate GPU coverage.
+        available={x['Codec'] for x in attempts if x['Available']}
+        expected=286+len(available)
+        assert len(attempts)==3 and len([s for s in report.splitlines() if s.startswith('PASS:')])==expected
+        assert re.search(r'^TOTAL: '+str(expected)+r' passed$',report,re.M)
+        for codec in available:assert 'actual available backend burns and decodes styled pixels: '+codec in report
         assert 'coreclr.dll' in text.lower() and str(app).lower() in text.lower()
         # host trace must resolve the CLR and WPF library inside THIS package, not installed shared frameworks.
         for line in text.splitlines():
             if 'coreclr path =' in line.lower():assert str(app/'coreclr.dll').lower() in line.lower(),line
-        print('PASS: app-local self-contained runtime selected; 288 actual core tests passed; no system runtime installation.')
+        print(f'PASS: app-local self-contained runtime selected; {expected} actual core tests passed ({len(available)} hardware encoders); no system runtime installation.')
     print(json.dumps(result,ensure_ascii=False))
 if __name__=='__main__':main()
