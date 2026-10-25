@@ -66,6 +66,12 @@
     <Separator/>
     <MenuItem Header="当前播放位置设为起点" InputGestureText="Ctrl+3" Click="SetStartClick"/>
     <MenuItem Header="当前播放位置设为终点" InputGestureText="Ctrl+4" Click="SetEndClick"/>
+    <MenuItem Header="边听边打轴">
+     <MenuItem Header="连续播放 / 暂停" InputGestureText="Ctrl+P" Click="PlayClick"/>
+     <MenuItem Header="标记起点（播放不停）" InputGestureText="F8" Click="LiveStartClick"/>
+     <MenuItem Header="标记终点并完成当前句" InputGestureText="F9" Click="LiveEndClick"/>
+     <MenuItem Header="取消待完成的起点" InputGestureText="Esc" Click="LiveCancelClick"/>
+    </MenuItem>
     <MenuItem x:Name="SceneTimingItem" Header="贴齐当前场景（关键帧）" InputGestureText="Ctrl+5" Click="SnapSceneClick"/>
     <MenuItem x:Name="AlignTimingItem" Header="所选行整体对齐视频播放位置" InputGestureText="Ctrl+6" Click="AlignToCurrentClick"/>
     <MenuItem Header="使时间连续">
@@ -126,10 +132,23 @@
      </Grid>
     </Border>
     <GridSplitter x:Name="VideoSplitter" Grid.Column="1" Width="12" HorizontalAlignment="Stretch" Background="Transparent"/>
-    <ScrollViewer x:Name="AudioEditorViewport" Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><Grid x:Name="AudioEditorPanel" MinHeight="520" Height="{Binding ViewportHeight,ElementName=AudioEditorViewport}"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition x:Name="AudioWaveRow" Height="1.1*" MinHeight="100"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="1.4*" MinHeight="300"/></Grid.RowDefinitions>
+    <ScrollViewer x:Name="AudioEditorViewport" Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><Grid x:Name="AudioEditorPanel" MinHeight="520" Height="{Binding ViewportHeight,ElementName=AudioEditorViewport}"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition x:Name="AudioWaveRow" Height="1.1*" MinHeight="100"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="1.4*" MinHeight="270"/></Grid.RowDefinitions>
      <DockPanel x:Name="AudioHeader" Margin="10,8,10,8"><TextBlock x:Name="AudioDisplayLabel" Text="音频波形" VerticalAlignment="Center"/><TextBlock x:Name="WaveStatus" Text=" · 等待媒体" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/><TextBlock x:Name="GapSummary" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/></DockPanel>
      <local:Waveform x:Name="Wave" Grid.Row="1" Margin="0,0,0,3" InputMethod.IsInputMethodEnabled="False" ToolTip="左键设起点 / 右键设终点 · 拖动边界 · Shift+单击定位 · 滚轮缩放"/>
-     <DockPanel x:Name="AudioTransport" Grid.Row="2" Margin="0,3"><StackPanel Orientation="Horizontal"><Button x:Name="AudioPlayButton" Content="播放选段 S" ToolTip="S / 空格：播放当前选段（非输入区域）" Click="PlaySelectionClick"/><Button Content="停止 H" ToolTip="H：停止播放（非输入区域）" Click="StopClick"/><Button Content="句首 E" ToolTip="E：试听句首 500ms（非输入区域）" Click="PlayBeginningClick"/><Button Content="句尾 D" ToolTip="D：试听句尾 500ms（非输入区域）" Click="PlayEndingClick"/></StackPanel><CheckBox x:Name="Follow" IsChecked="True" Content="跟随播放" HorizontalAlignment="Right"/></DockPanel>
+     <StackPanel x:Name="AudioTransport" Grid.Row="2" Margin="0,3">
+      <DockPanel><StackPanel Orientation="Horizontal"><Button x:Name="AudioPlayButton" Content="播放选段 S" ToolTip="S / 空格：播放当前选段（非输入区域）" Click="PlaySelectionClick"/><Button Content="停止 H" ToolTip="H：停止播放（非输入区域）" Click="StopClick"/><Button Content="句首 E" ToolTip="E：试听句首 500ms（非输入区域）" Click="PlayBeginningClick"/><Button Content="句尾 D" ToolTip="D：试听句尾 500ms（非输入区域）" Click="PlayEndingClick"/></StackPanel><CheckBox x:Name="Follow" IsChecked="True" Content="跟随播放" HorizontalAlignment="Right"/></DockPanel>
+      <WrapPanel><Button Content="连续播放" ToolTip="Ctrl+P / B：从当前位置连续播放或暂停" Click="PlayClick"/><Button Content="起点 F8" Click="LiveStartClick"/><Button Content="终点 F9" Click="LiveEndClick"/><CheckBox x:Name="LiveNextCheck" Content="完成后下一句" ToolTip="F9 完成后选中下一行；末行自动新增。声音不会跳回下一行的旧时间。"/></WrapPanel>
+      <TextBlock x:Name="LiveTimingHint" Text="F8 标起点 → F9 标终点 · 播放不停" FontSize="11" Margin="4,2" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap"/>
+       <Expander x:Name="FineTimingPanel" Header="首尾精修 · 放大 / 试听 / 微调" Margin="4,4" Expanded="FinePanelChanged" Collapsed="FinePanelChanged">
+        <StackPanel Margin="2,6">
+         <WrapPanel><RadioButton x:Name="FineStartChoice" Content="起点" Foreground="{DynamicResource ForegroundBrush}" GroupName="FineBoundary" IsChecked="True" Checked="FineChoiceChanged" Margin="3,5,12,5"/><RadioButton x:Name="FineEndChoice" Content="终点" Foreground="{DynamicResource ForegroundBrush}" GroupName="FineBoundary" Checked="FineChoiceChanged" Margin="3,5,12,5"/><TextBlock x:Name="FineBoundaryLabel" VerticalAlignment="Center" Foreground="{DynamicResource Accent}"/><ComboBox x:Name="FineZoomBox" SelectedIndex="1" Width="88" SelectionChanged="FineOptionsChanged" ToolTip="局部波形的总时长，不改变主波形"><ComboBoxItem Content="0.5 秒"/><ComboBoxItem Content="1 秒"/><ComboBoxItem Content="2 秒"/></ComboBox></WrapPanel>
+         <local:Waveform x:Name="FineWave" Height="104" InputMethod.IsInputMethodEnabled="False" ToolTip="拖动微调当前选中的起点或终点；主波形保持总览"/>
+         <WrapPanel><Button Content="−100" Tag="-100" Click="FineNudgeClick"/><Button Content="−50" Tag="-50" Click="FineNudgeClick"/><Button Content="−10" Tag="-10" Click="FineNudgeClick"/><TextBlock Text="毫秒" VerticalAlignment="Center" Margin="3"/><Button Content="+10" Tag="10" Click="FineNudgeClick"/><Button Content="+50" Tag="50" Click="FineNudgeClick"/><Button Content="+100" Tag="100" Click="FineNudgeClick"/></WrapPanel>
+         <WrapPanel><Button Content="听边界前后" Tag="boundary" Click="FineAuditionClick"/><ComboBox x:Name="FineContextBox" Width="102" SelectedIndex="1" SelectionChanged="FineOptionsChanged" ToolTip="边界之前与之后各播放多久"><ComboBoxItem Content="各 200 ms"/><ComboBoxItem Content="各 300 ms"/><ComboBoxItem Content="各 500 ms"/></ComboBox><Button Content="听实际选区" Tag="selection" Click="FineAuditionClick"/><CheckBox x:Name="FineLoopCheck" Content="循环"/><Button Content="停止 H" Click="StopClick"/></WrapPanel>
+         <TextBlock Text="先用 F8 / F9 粗打轴，再精修 · 微调时重听正在试听的范围 · 无自动吸附" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" Margin="4,3"/>
+        </StackPanel>
+       </Expander>
+     </StackPanel>
      <DockPanel x:Name="AudioScrollPanel" Grid.Row="3"><Label Content="视窗"/><Slider x:Name="WaveScroll" Minimum="0" Maximum="60" ValueChanged="WaveScrollChanged" MinWidth="170"/><TextBlock x:Name="ZoomLabel" Text="12 s · 滚轮缩放" VerticalAlignment="Center" Margin="7,0" DockPanel.Dock="Right"/></DockPanel>
      <TabControl x:Name="EditorTabs" Grid.Row="4" Margin="0,9,0,0" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource BorderBrush}">
       <TabItem Header="字幕编辑"><Grid Margin="5"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>

@@ -27,7 +27,7 @@ public partial class MainWindow
         path=Path.GetFullPath(path);if(!File.Exists(path))throw new FileNotFoundException("找不到音频文件。",path);Pause();audioLoadCancel?.Cancel();var cancel=new CancellationTokenSource();audioLoadCancel=cancel;var token=cancel.Token;
         string cache=Path.Combine(Path.GetTempPath(),"Frameflow-audio-"+Guid.NewGuid().ToString("N")+".wav");double previous=PlaybackPosition;Status.Text="正在准备独立音轨，旧音轨在成功前保留…";
         try{var result=await Task.Run(()=>AudioPeaks.Decode(path,token,null,cache),token);token.ThrowIfCancellationRequested();if(result.Duration<=0)throw new InvalidOperationException("音轨为空。");decodeCancel?.Cancel();CloseAudio();externalAudioPath=independent?path:null;audioClosed=false;audioCachePath=cache;audioCaches.Add(cache);Wave.Peaks=result.Peaks;Wave.Spectrum=null;Wave.Duration=result.Duration;WaveScroll.Maximum=result.Duration;duration=independent?result.Duration:VideoDuration;SeekBar.Maximum=duration;pendingAudioPosition=Math.Clamp(previous,0,Math.Max(0,result.Duration-.01));AudioPlayer.IsMuted=SmokeMode||playbackMuted;AudioPlayer.Open(new Uri(cache));audioPreparing=true;
-            AudioOnly.IsEnabled=!independent;if(independent)AudioOnly.IsChecked=true;WaveStatus.Text=$" · {Path.GetFileName(path)} · {result.SampleRate} Hz / {result.Channels} 声道";Wave.InvalidateVisual();ApplyAudioVolume();RememberMedia(path,"audio");Status.Text=independent?"独立音频已加载，视频保留并暂停；从视频打开音频可恢复关联音轨。":"视频音轨已重新加载。";ScheduleSpectrum();
+            AudioOnly.IsEnabled=!independent;if(independent)AudioOnly.IsChecked=true;WaveStatus.Text=$" · {Path.GetFileName(path)} · {result.SampleRate} Hz / {result.Channels} 声道";Wave.InvalidateVisual();RefreshFineTiming(true);ApplyAudioVolume();RememberMedia(path,"audio");Status.Text=independent?"独立音频已加载，视频保留并暂停；从视频打开音频可恢复关联音轨。":"视频音轨已重新加载。";ScheduleSpectrum();
         }catch{TryDeleteAudio(cache);throw;}
     }
     async Task GenerateAudioAsync(double seconds,bool noise)
@@ -36,7 +36,7 @@ public partial class MainWindow
     }
     void CloseAudioTrack()
     {
-        Pause();audioLoadCancel?.Cancel();decodeCancel?.Cancel();spectrumCancel?.Cancel();CloseAudio();externalAudioPath=null;audioClosed=true;AudioOnly.IsEnabled=true;AudioOnly.IsChecked=false;Wave.Peaks=[];Wave.Spectrum=null;Wave.InvalidateVisual();WaveStatus.Text=" · 音频已关闭（视频保留，静音播放）";duration=VideoAvailable?VideoDuration:60;SeekBar.Maximum=duration;ApplyAudioVolume();
+        Pause();audioLoadCancel?.Cancel();decodeCancel?.Cancel();spectrumCancel?.Cancel();CloseAudio();externalAudioPath=null;audioClosed=true;AudioOnly.IsEnabled=true;AudioOnly.IsChecked=false;Wave.Peaks=[];Wave.Spectrum=null;Wave.InvalidateVisual();RefreshFineTiming(true);WaveStatus.Text=" · 音频已关闭（视频保留，静音播放）";duration=VideoAvailable?VideoDuration:60;SeekBar.Maximum=duration;ApplyAudioVolume();
     }
     async Task<string> EnsureAudioCacheAsync(CancellationToken token)
     {

@@ -22,8 +22,8 @@ public partial class MainWindow
     {
         if(!ready)return;
         ShortcutHint.Text=ProtectTyping(Keyboard.FocusedElement as DependencyObject)
-            ? "文字输入中 · Ctrl+P 播放 / 暂停"
-            : "打轴键已启用 · S 播放  H 停止  D 句尾  E 句首";
+            ? "输入中 · Ctrl+P 播放 · F8 起点 / F9 终点"
+            : "S 选段 · H 停止 · D/E 试听 · F8 起点 / F9 终点";
     }
 
     void WindowKeyDown(object sender,KeyEventArgs e)
@@ -85,6 +85,9 @@ public partial class MainWindow
         if(key==Key.F3&&(modifiers==ModifierKeys.None||modifiers==ModifierKeys.Shift)){RepeatFind(modifiers==ModifierKeys.Shift);return true;}
         if(modifiers!=ModifierKeys.None)return false; // Shift+Enter stays a newline.
         if(key==Key.F2){Save(false);return true;}
+        if(key==Key.F8){LiveStartClick(this,e);return true;}
+        if(key==Key.F9){LiveEndClick(this,e);return true;}
+        if(key==Key.Escape&&liveTimingRow!=null){LiveCancelClick(this,e);return true;}
         if(key==Key.Escape&&workspaceFullscreen){SetWorkspaceFullscreen(false);return true;}
         if(key==Key.F11){SetWorkspaceFullscreen(!workspaceFullscreen);return true;}
         if(editor&&key==Key.Return){CommitNextClick(this,e);return true;}

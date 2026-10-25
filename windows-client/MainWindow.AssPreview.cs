@@ -34,16 +34,20 @@ public partial class MainWindow
     void ScheduleAssPreview(bool soon=false)
     {
         if(!ready||!precisePreview||previewClosed)return;
+        if(waveEditing){waveAssPending=true;return;}
+        if(wavePreviewRetain&&(document!=wavePreviewDocument||!VideoAvailable))wavePreviewRetain=false;
         if(assDragRetain&&!assDragging&&(document!=assDragDocument||!VideoAvailable||Math.Abs(VideoPositionSeconds-preciseSurface.PresentedTime)>.08))assDragRetain=false;
         // During a drag, coalesce pointer updates rather than cancel/debounce on
         // every mouse move. The in-flight frame completes; the next uses latest pos.
         if(assDragging){assDragPending=true;if(previewTask.IsCompleted){assDragPending=false;BeginAssPreview();}return;}
-        previewGeneration++;CancelAssPreview();previewDebounce.Stop();previewFrames?.Clear();previewFrames=null;if(!assDragRetain)preciseSurface.Clear();
+        previewGeneration++;CancelAssPreview();previewDebounce.Stop();previewFrames?.Clear();previewFrames=null;if(!assDragRetain&&!wavePreviewRetain)preciseSurface.Clear();
         previewDebounce.Interval=TimeSpan.FromMilliseconds(soon?60:350);previewDebounce.Start();
     }
     string PreviewSnapshot()
     {
-        string original=document.Serialize();if(!draftDirty||selected==null)return original;
+        string original=document.Serialize();
+        if(waveEditing&&waveEditRow!=null){var timingCopy=SubtitleDocument.Parse(original);var timingRow=timingCopy.Rows.ElementAt(waveEditRow.Number-1);timingRow.Start=waveStart;timingRow.End=waveEnd;return timingCopy.Serialize();}
+        if(!draftDirty||selected==null)return original;
         // A preview of a draft is a private copy, not ApplyEditor()/undo/save.
         var copy=SubtitleDocument.Parse(original);var row=copy.Rows.ElementAt(selected.Number-1);
         double start=Timecode.Parse(StartBox.Text),end=Timecode.Parse(EndBox.Text);if(end<=start)throw new FormatException("请先修正字幕起止时间。");
@@ -56,7 +60,7 @@ public partial class MainWindow
         if(!VideoAvailable){preciseSurface.Clear();PreviewState.Text="打开视频后显示 libass 预览";return;}
         string snapshot;try{snapshot=PreviewSnapshot();}catch(Exception e){PreviewState.Text="预览未更新："+e.Message;return;}
         long generation=previewGeneration;var previous=previewTask;CancelAssPreview();var cancellation=new CancellationTokenSource();previewCancel=cancellation;var token=cancellation.Token;
-        int width=(int)sourceVideoWidth,height=(int)sourceVideoHeight,fontRevision=previewFontsRevision;double start=VideoPositionSeconds;previewStart=start;bool continuous=playing&&!AudioMode,drag=assDragging;string fonts=previewFontDirectory;
+        int width=(int)sourceVideoWidth,height=(int)sourceVideoHeight,fontRevision=previewFontsRevision;double start=VideoPositionSeconds;previewStart=start;bool continuous=playing&&!AudioMode&&!waveEditing,drag=assDragging||waveEditing;string fonts=previewFontDirectory;
         pendingSnapshot=snapshot;pendingDragSimple=false;
         if(!draftDirty&&selected!=null)
         {
@@ -79,7 +83,7 @@ public partial class MainWindow
                     if(dragRenderer!=null)
                     {
                         var frame=dragRenderer.Render(snapshot,width,height,start,token);await buffer.AddAsync(frame,token);
-                        await Dispatcher.InvokeAsync(()=>{if(generation==previewGeneration&&!previewClosed){AdvanceAssPreview(start);PreviewState.Text="ASS 实时定位 · 松手精确校准";PreviewState.ToolTip="常驻 libass / 字体缓存；拖动按显示尺寸渲染完整 ASS，松手后以原尺寸压制引擎校准。";}},DispatcherPriority.Render);
+                        await Dispatcher.InvokeAsync(()=>{if(generation==previewGeneration&&!previewClosed){AdvanceAssPreview(start);PreviewState.Text=waveEditing?"首尾预览 · 松手精确校准":"ASS 实时定位 · 松手精确校准";PreviewState.ToolTip="常驻 libass / 字体缓存；拖动按显示尺寸渲染完整 ASS，松手后以原尺寸压制引擎校准。";}},DispatcherPriority.Render);
                         return;
                     }
                 }
@@ -121,7 +125,7 @@ public partial class MainWindow
         {
             preciseSurface.Present(frame);shownSnapshot=pendingSnapshot;shownDragSimple=pendingDragSimple;shownDragX=pendingDragX;shownDragY=pendingDragY;
             if(assDragging){assDragTranslateReady=true;UpdateAssDragOffset();}
-            else{assDragRetain=false;preciseSurface.SetOffset(0,0);}
+            else{assDragRetain=false;if(!waveEditing)wavePreviewRetain=false;preciseSurface.SetOffset(0,0);}
         }
     }
     void BeginAssSubtitleDrag()

@@ -34,9 +34,7 @@ public partial class MainWindow:Window
         AddHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler((_,_)=>composing=false),true);
         AddHandler(Keyboard.GotKeyboardFocusEvent,new KeyboardFocusChangedEventHandler((_,_)=>{composing=false;UpdateShortcutHint();}),true);
         Deactivated+=(_,_)=>composing=false;
-        Wave.BeginEdit+=()=>{if(selected==null||!ApplyEditor())return false;PushUndo();return true;};
-        Wave.SelectionEdited+=(a,b)=>{if(selected==null)return;selected.Start=a;selected.End=b;selected.Reviewed=false;loading=true;StartBox.Text=Timecode.Ass(a);EndBox.Text=Timecode.Ass(b);DurationLabel.Text=selected.DurationText;loading=false;if(Linked.IsChecked==true)Seek(Wave.EditingStart?a:b,false);};
-        Wave.EndEdit+=()=>{MarkDirty();RefreshIssues();};
+        InitializeFineTiming();
         Wave.SeekRequested+=t=>{if(Linked.IsChecked==true)Seek(t);else{Wave.Position=t;Wave.InvalidateVisual();}};
         Wave.ZoomChanged+=()=>{ZoomLabel.Text=$"{Wave.Span:0.0} s · 滚轮缩放";ScheduleSpectrum();};
         Overlay.BeginMove+=()=>{if(selected==null||!ApplyEditor())return false;if(selected.Text.Contains(@"\move(")){Status.Text="此句含动态定位，拖动已禁用；请在正文中明确编辑 move 标签。";return false;}PushUndo();BeginAssSubtitleDrag();return true;};
@@ -55,14 +53,16 @@ public partial class MainWindow:Window
     void RefreshRows(){bool wasLoading=loading;loading=true;SubtitleGrid.Items.Refresh();tableDirty=false;loading=wasLoading;CountLabel.Text=$"{document.Rows.Count()} 句 · 当前 #{selected?.Number??0}";}
     void LoadEditor()
     {
+        CancelLiveTiming();CancelWaveEdit();StopFineAudition();
         loading=true;var row=selected;TextEditor.IsEnabled=row!=null;StartBox.IsEnabled=EndBox.IsEnabled=row!=null;
         if(row!=null){ActorBox.Text=row.Actor;if(!StyleBox.Items.Cast<string>().Contains(row.Style))StyleBox.ItemsSource=document.Styles.Select(s=>s.Name).Append(row.Style).Distinct().ToArray();StyleBox.SelectedItem=row.Style;LayerBox.Text=row.Layer;CommentBox.IsChecked=row.Comment;StartBox.Text=row.StartText;EndBox.Text=row.EndText;TextEditor.Text=row.Text.Replace(@"\N","\n");DurationLabel.Text=row.DurationText;NoteBox.Text=row.Note;
             var s=document.FindStyle(row);FontBox.Text=AssTags.Get(row,"fn",s?.Get("Fontname","Microsoft YaHei")??"Microsoft YaHei");SizeBox.Text=AssTags.Number(row,"fs",s?.Number("Fontsize",48)??48).ToString(CultureInfo.InvariantCulture);OutlineBox.Text=AssTags.Number(row,"bord",s?.Number("Outline",2)??2).ToString(CultureInfo.InvariantCulture);ColorBox.Text=AssTags.AssToHex(AssTags.Get(row,"c",s?.Get("PrimaryColour","&HFFFFFF")??"&HFFFFFF"));BoldBox.IsChecked=AssTags.Number(row,"b",s?.Number("Bold",0)??0)!=0;ItalicBox.IsChecked=AssTags.Number(row,"i",s?.Number("Italic",0)??0)!=0;Wave.Start=row.Start;Wave.End=row.End;
         }else{TextEditor.Text="";NoteBox.Text="";}
-        Overlay.Document=document;Overlay.Selected=row;var p=row!=null?Overlay.Position(row):(0d,0d,2);XBox.Text=p.Item1.ToString("0",CultureInfo.InvariantCulture);YBox.Text=p.Item2.ToString("0",CultureInfo.InvariantCulture);loading=false;draftDirty=false;if(tableDirty)RefreshRows();CountLabel.Text=$"{SubtitleGrid.Items.Count} 句 · 当前 #{selected?.Number??0}";Wave.InvalidateVisual();Overlay.InvalidateDocument();ScheduleAssPreview();
+        Overlay.Document=document;Overlay.Selected=row;var p=row!=null?Overlay.Position(row):(0d,0d,2);XBox.Text=p.Item1.ToString("0",CultureInfo.InvariantCulture);YBox.Text=p.Item2.ToString("0",CultureInfo.InvariantCulture);loading=false;draftDirty=false;if(tableDirty)RefreshRows();CountLabel.Text=$"{SubtitleGrid.Items.Count} 句 · 当前 #{selected?.Number??0}";Wave.InvalidateVisual();Overlay.InvalidateDocument();ScheduleAssPreview();RefreshFineTiming(true);
     }
     bool ApplyEditor(bool report=true)
     {
+        if(waveEditing)EndWaveEdit();
         if(loading||selected==null)return true;
         try
         {
@@ -71,7 +71,7 @@ public partial class MainWindow:Window
             if(actor.IndexOfAny([',','\r','\n'])>=0)throw new FormatException("说话人不能含逗号或换行。");string text=TextEditor.Text.Replace("\r\n",@"\N").Replace("\n",@"\N");
             bool changed=Math.Abs(selected.Start-start)>.004||Math.Abs(selected.End-end)>.004||selected.Text!=text||selected.Actor!=actor||selected.Style!=style||selected.Layer!=layer.ToString()||selected.Comment!=(CommentBox.IsChecked==true);
             if(changed){PushUndo();selected.Start=start;selected.End=end;selected.Text=text;selected.Actor=actor;selected.Style=style;selected.Layer=layer.ToString();selected.Comment=CommentBox.IsChecked==true;selected.Reviewed=false;MarkDirty();RefreshIssues();Overlay.InvalidateVisual();}
-            Wave.Start=selected.Start;Wave.End=selected.End;Wave.InvalidateVisual();draftDirty=false;UpdateTitle();return true;
+            Wave.Start=selected.Start;Wave.End=selected.End;Wave.InvalidateVisual();RefreshFineTiming(false);draftDirty=false;UpdateTitle();return true;
         }catch(Exception ex){if(report)MessageBox.Show(this,ex.Message,"不能提交",MessageBoxButton.OK,MessageBoxImage.Warning);return false;}
     }
     void DraftChanged(object sender,TextChangedEventArgs e){if(!ready||loading)return;draftDirty=true;UpdateTitle();ScheduleAssPreview();}
@@ -132,13 +132,13 @@ public partial class MainWindow:Window
     void MediaClick(object sender,RoutedEventArgs e){var dlg=new OpenFileDialog{Filter="视频 / 音频|*.mp4;*.m4v;*.mov;*.mkv;*.avi;*.wmv;*.wav;*.mp3;*.m4a;*.aac;*.wma|所有文件|*.*"};if(dlg.ShowDialog(this)==true)OpenMedia(dlg.FileName);}
     public async void OpenMedia(string path)
     {
-        Pause();dummyVideo=false;dummyClock.Reset();externalAudioPath=null;audioClosed=false;audioLoadCancel?.Cancel();AudioOnly.IsEnabled=true;Wave.Spectrum=null;videoZoom=aspectOverride=0;VideoSurface.Background=new SolidColorBrush(Color.FromRgb(20,29,40));duration=60;timingFrames=null;CloseAudio();ApplyAudioVolume();decodeCancel?.Cancel();decodeCancel=new CancellationTokenSource();var token=decodeCancel.Token;Pause();mediaReady=false;Player.Close();Player.Source=null;mediaPath=path;MediaLabel.Text=Path.GetFileName(path);MediaPlaceholder.Text="正在加载媒体…";MediaPlaceholder.Visibility=Visibility.Visible;Player.Source=new Uri(Path.GetFullPath(path));Player.Play();Player.Pause();Wave.Peaks=[];WaveStatus.Text=" · 正在解码音轨（可继续编辑）";pendingAudioPosition=selected?.Start??0;
-        try{var progress=new Progress<double>(sec=>{if(!token.IsCancellationRequested)WaveStatus.Text=$" · 已分析 {sec:0} 秒";});var result=await Task.Run(()=>AudioPeaks.Decode(path,token,progress),token);if(token.IsCancellationRequested)return;Wave.Peaks=result.Peaks;duration=Math.Max(duration,result.Duration);Wave.Duration=duration;WaveScroll.Maximum=duration;SeekBar.Maximum=duration;WaveStatus.Text=$" · {result.SampleRate} Hz / {result.Channels} 声道";Wave.InvalidateVisual();Status.Text="真实音频波形已生成；左键设起点，右键设终点，Shift+单击定位。";if(AudioMode)PrepareAudio();}
+        Pause();dummyVideo=false;dummyClock.Reset();externalAudioPath=null;audioClosed=false;audioLoadCancel?.Cancel();AudioOnly.IsEnabled=true;Wave.Spectrum=null;videoZoom=aspectOverride=0;VideoSurface.Background=new SolidColorBrush(Color.FromRgb(20,29,40));duration=60;timingFrames=null;CloseAudio();ApplyAudioVolume();decodeCancel?.Cancel();decodeCancel=new CancellationTokenSource();var token=decodeCancel.Token;Pause();mediaReady=false;Player.Close();Player.Source=null;mediaPath=path;MediaLabel.Text=Path.GetFileName(path);MediaPlaceholder.Text="正在加载媒体…";MediaPlaceholder.Visibility=Visibility.Visible;Player.Source=new Uri(Path.GetFullPath(path));Player.Play();Player.Pause();Wave.Peaks=[];RefreshFineTiming(true);WaveStatus.Text=" · 正在解码音轨（可继续编辑）";pendingAudioPosition=selected?.Start??0;
+        try{var progress=new Progress<double>(sec=>{if(!token.IsCancellationRequested)WaveStatus.Text=$" · 已分析 {sec:0} 秒";});var result=await Task.Run(()=>AudioPeaks.Decode(path,token,progress),token);if(token.IsCancellationRequested)return;Wave.Peaks=result.Peaks;duration=Math.Max(duration,result.Duration);Wave.Duration=duration;WaveScroll.Maximum=duration;SeekBar.Maximum=duration;WaveStatus.Text=$" · {result.SampleRate} Hz / {result.Channels} 声道";Wave.InvalidateVisual();RefreshFineTiming(true);Status.Text="真实音频波形已生成；左键设起点，右键设终点，Shift+单击定位。";if(AudioMode)PrepareAudio();}
         catch(OperationCanceledException){}catch(Exception ex){if(token.IsCancellationRequested)return;WaveStatus.Text=" · 音轨解码失败";Status.Text="系统解码器不支持此媒体或没有音轨；可另开 PCM WAV。";MessageBox.Show(this,"无法生成音频波形："+ex.Message+"\n\n可使用 PCM WAV / 常见 MP4 AAC；当前版本依赖 Windows 系统解码器。","媒体兼容性",MessageBoxButton.OK,MessageBoxImage.Information);}
     }
     void MediaOpened(object sender,RoutedEventArgs e){mediaReady=true;if(mediaPath!=null){Remember(mediaPath,"media");if(Player.NaturalVideoWidth>0)RememberMedia(mediaPath,"video");}if(externalAudioPath==null)duration=Player.NaturalDuration.HasTimeSpan?Player.NaturalDuration.TimeSpan.TotalSeconds:60;SeekBar.Maximum=duration;WaveScroll.Maximum=duration;Wave.Duration=duration;sourceVideoWidth=Player.NaturalVideoWidth>0?Player.NaturalVideoWidth:document.PlayResX;sourceVideoHeight=Player.NaturalVideoHeight>0?Player.NaturalVideoHeight:document.PlayResY;UpdateVideoPresentation();ApplyAudioVolume();MediaPlaceholder.Visibility=Player.NaturalVideoWidth>0?Visibility.Collapsed:Visibility.Visible;MediaPlaceholder.Text="音频模式 · 字幕预览";if(AudioMode){Player.Position=TimeSpan.FromSeconds(selected?.Start??0);Overlay.Time=selected?.Start??0;Overlay.InvalidateDocument();}Seek(selected?.Start??0);}
     void MediaFailed(object sender,ExceptionRoutedEventArgs e){mediaReady=false;Pause();MediaPlaceholder.Visibility=Visibility.Visible;MediaPlaceholder.Text="媒体播放失败 · 请尝试常见 MP4 / WAV";Status.Text=e.ErrorException?.Message??"系统解码器不支持此文件。";}
-    void MediaEnded(object sender,RoutedEventArgs e)=>Pause();
+    void MediaEnded(object sender,RoutedEventArgs e){if(!RestartFineAudition())Pause();}
     void EnsureWave(double t){if(t<Wave.ViewStart||t>Wave.ViewStart+Wave.Span){Wave.ViewStart=Math.Max(0,t-Wave.Span*.2);WaveScroll.Value=Wave.ViewStart;Wave.InvalidateVisual();}}
     void PlayClick(object sender,RoutedEventArgs e){if(playing)Pause();else PlayRange(PlaybackPosition,duration);}
     void PlaySelectionClick(object sender,RoutedEventArgs e){if(selected!=null&&ApplyEditor())PlayRange(selected.Start,selected.End);}
@@ -149,7 +149,7 @@ public partial class MainWindow:Window
     void SeekDown(object sender,MouseButtonEventArgs e)=>scrubbing=true;void SeekUp(object sender,MouseButtonEventArgs e){scrubbing=false;Seek(SeekBar.Value);}
     void SpeedChanged(object sender,SelectionChangedEventArgs e){if(!ready)return;if(dummyVideo&&dummyClock.IsRunning){dummyPosition=VideoPositionSeconds;dummyClock.Restart();}Player.SpeedRatio=AudioPlayer.SpeedRatio=SpeedBox.SelectedIndex switch{0=>.75,2=>1.25,_=>1};}
     void WaveScrollChanged(object sender,RoutedPropertyChangedEventArgs<double> e){if(!ready)return;Wave.ViewStart=e.NewValue;Wave.InvalidateVisual();ScheduleSpectrum();}
-    void AutoSave(){if(SmokeMode||!dirty&&!draftDirty)return;try{if(!ApplyEditor(false))return;Directory.CreateDirectory(recoveryDir);string file=Path.Combine(recoveryDir,sessionId+".ass");SubtitleDocument.AtomicSave(file,document.Bytes(),false);ReviewStore.Save(file,document,mediaPath);Status.Text="恢复副本已更新（未覆盖原字幕）。";}catch(Exception ex){Status.Text="恢复副本写入失败："+ex.Message;}}
+    void AutoSave(){if(SmokeMode||waveEditing||!dirty&&!draftDirty)return;try{if(!ApplyEditor(false))return;Directory.CreateDirectory(recoveryDir);string file=Path.Combine(recoveryDir,sessionId+".ass");SubtitleDocument.AtomicSave(file,document.Bytes(),false);ReviewStore.Save(file,document,mediaPath);Status.Text="恢复副本已更新（未覆盖原字幕）。";}catch(Exception ex){Status.Text="恢复副本写入失败："+ex.Message;}}
     void RecoveryClick(object sender,RoutedEventArgs e)=>Guard(()=>{Directory.CreateDirectory(recoveryDir);Process.Start(new ProcessStartInfo("explorer.exe",recoveryDir){UseShellExecute=true});});
     void WindowClosing(object? sender,CancelEventArgs e){if(!SmokeMode&&!ConfirmDiscard()){e.Cancel=true;return;}DisposeMediaMenuResources();decodeCancel?.Cancel();StopPlaybackRendering();timer.Stop();autosave.Stop();Player.Close();CloseAudio();}
     void WindowDrop(object sender,DragEventArgs e){if(e.Data.GetData(DataFormats.FileDrop) is not string[] files||files.Length==0)return;string path=files[0];if(new[]{".ass",".ssa",".srt"}.Contains(Path.GetExtension(path).ToLowerInvariant()))Guard(()=>OpenSubtitle(path));else OpenMedia(path);}

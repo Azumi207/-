@@ -19,7 +19,7 @@ public partial class MainWindow
         ThemeLightItem.IsChecked=Appearance.Mode=="light";
         ThemeDarkItem.IsChecked=Appearance.Mode=="dark";
         ThemeSystemItem.IsChecked=Appearance.Mode=="system";
-        Wave.RefreshTheme();PositionLabel.InvalidateVisual();SeekBar.InvalidateVisual();
+        Wave.RefreshTheme();FineWave.RefreshTheme();PositionLabel.InvalidateVisual();SeekBar.InvalidateVisual();
     }
     void AppearanceClick(object sender,RoutedEventArgs e)
     {

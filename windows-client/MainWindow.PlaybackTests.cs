@@ -21,7 +21,8 @@ public partial class MainWindow
         int renders=Wave.StaticRenders,backgrounds=Wave.BackgroundBuilds;
         for(int i=0;i<100;i++)Wave.Position=.6+i*.001;
         await Task.Delay(100);
-        var head=VisualTreeHelper.GetChild(Wave,0);
+        // Layers may precede the retained playhead; identify its translation instead of its index.
+        var head=Enumerable.Range(0,VisualTreeHelper.GetChildrenCount(Wave)).Select(i=>VisualTreeHelper.GetChild(Wave,i)).OfType<DrawingVisual>().Single(v=>v.Transform is TranslateTransform);
         check(Wave.StaticRenders==renders&&Wave.BackgroundBuilds==backgrounds,"100 playhead moves do not redraw waveform surface or rebuild geometry");
         check(head is DrawingVisual dv&&Math.Abs(((TranslateTransform)dv.Transform).X-(Wave.Position-Wave.ViewStart)/Wave.Span*Wave.ActualWidth)<.01,"retained playhead visual moves to the correct waveform coordinate");
         Wave.Position=Wave.ViewStart+Wave.Span+1;check(((DrawingVisual)head).Opacity==0,"playhead hides outside viewport");Wave.Position=.6;

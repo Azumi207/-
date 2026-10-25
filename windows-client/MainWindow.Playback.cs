@@ -24,14 +24,14 @@ public partial class MainWindow
         if(!playing||!PlaybackReady||scrubbing||WindowState==WindowState.Minimized)return;
         double frameMs=((RenderingEventArgs)e).RenderingTime.TotalMilliseconds;
         if(frameMs==lastRenderMs)return;lastRenderMs=frameMs;PlaybackRenderCallbacks++;
-        double t=PlaybackPosition;if(t>=stopAt)Pause();UpdatePlaybackUi(t,!AudioMode,Follow.IsChecked==true);
+        double t=PlaybackPosition;if(t>=stopAt){if(RestartFineAudition())return;Pause();}UpdatePlaybackUi(t,!AudioMode,Follow.IsChecked==true);
     }
 
     void InitializePlayback()
     {
         SeekBar.ScrubCompleted+=(_,_)=>scrubbing=false;
         AudioPlayer.MediaOpened+=(_,_)=>{audioReady=true;audioPreparing=false;AudioPlayer.Position=TimeSpan.FromSeconds(pendingAudioPosition);AudioPlayer.SpeedRatio=Player.SpeedRatio;Status.Text=AudioMode?"纯音频已就绪 · 视频保持暂停，按 S 试听。":"音频缓存已就绪。";};
-        AudioPlayer.MediaEnded+=(_,_)=>{if(AudioMode)Pause();};
+        AudioPlayer.MediaEnded+=(_,_)=>{if(AudioMode&&!RestartFineAudition())Pause();};
         AudioPlayer.MediaFailed+=(_,e)=>{audioReady=audioPreparing=false;Pause();Status.Text="纯音频打开失败："+e.ErrorException.Message;};
     }
     async void PrepareAudio()
@@ -76,23 +76,24 @@ public partial class MainWindow
         PlaybackUiUpdates++;timerSeeking=true;SeekBar.Value=t;timerSeeking=false;
         if(!playing||double.IsNaN(lastTextUpdate)||Math.Abs(t-lastTextUpdate)>=.1){PositionLabel.Text=Timecode.Ass(t);lastTextUpdate=t;}
         if(video){Overlay.UpdateTime(t);AdvanceAssPreview(t);}
-        Wave.Position=t;if(follow&&!Wave.Dragging)EnsureWave(t);
+        Wave.Position=t;if(FineTimingPanel.IsExpanded)FineWave.Position=t;if(follow&&!Wave.Dragging&&!FineWave.Dragging&&fineAudition==null)EnsureWave(t);
     }
     void Tick()
     {
         if(!playing||!PlaybackReady||scrubbing)return;
         // Timer is only the range-end safety check (also works while minimized).
         // Display updates follow the compositor, not a 40ms dispatcher timer.
-        double t=PlaybackPosition;if(t>=stopAt){Pause();UpdatePlaybackUi(t,!AudioMode,false);}
+        double t=PlaybackPosition;if(t>=stopAt){if(RestartFineAudition())return;Pause();UpdatePlaybackUi(t,!AudioMode,false);}
     }
     void Seek(double t,bool follow=true)
     {
+        CancelFineAudition();CancelLiveTiming("已跳转播放位置，待完成的起点已取消；请重新按 F8。");
         t=Math.Clamp(t,0,Math.Max(duration,selected?.End??0));
         if(AudioMode){pendingAudioPosition=t;if(audioReady)AudioPlayer.Position=TimeSpan.FromSeconds(t);}
         else if(dummyVideo){dummyPosition=t;if(dummyClock.IsRunning)dummyClock.Restart();}else if(mediaReady)Player.Position=TimeSpan.FromSeconds(t);
         UpdatePlaybackUi(t,!AudioMode,follow&&Linked.IsChecked==true);if(!AudioMode)ScheduleAssPreview(true);
     }
-    void Pause(){if(dummyVideo){dummyPosition=VideoPositionSeconds;dummyClock.Reset();}playing=false;timer.Stop();StopPlaybackRendering();Player.Pause();AudioPlayer.Pause();PlayButton.Content="播放";stopAt=double.PositiveInfinity;ScheduleAssPreview(true);}
+    void Pause(){CancelFineAudition();CancelLiveTiming("播放已停止，待完成的起点已取消；字幕未改动。");if(dummyVideo){dummyPosition=VideoPositionSeconds;dummyClock.Reset();}playing=false;timer.Stop();StopPlaybackRendering();Player.Pause();AudioPlayer.Pause();PlayButton.Content="播放";stopAt=double.PositiveInfinity;ScheduleAssPreview(true);}
     void PlayRange(double a,double b)
     {
         if(!PlaybackReady){if(AudioMode){PrepareAudio();Status.Text="纯音频尚未就绪，请等待音轨准备完成。";}else Status.Text="请先打开可播放的媒体。";return;}
